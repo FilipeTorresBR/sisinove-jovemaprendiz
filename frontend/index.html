@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SISAPRENDIZ - Gestão do Programa Jovem Aprendiz</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">S+</div>
+      <div>
+        <h1>SISAPRENDIZ</h1>
+        <p>Jovem Aprendiz SISINOVE</p>
+      </div>
+    </div>
+    <nav>
+      <button class="active" data-page="dashboard">Dashboard</button>
+      <button data-page="empresas">Empresas parceiras</button>
+      <button data-page="aprendizes">Aprendizes</button>
+      <button data-page="frequencia">Frequência mensal</button>
+      <button data-page="desempenho">Desempenho teórico</button>
+      <button data-page="contratos">Contratos e documentos</button>
+      <button data-page="portal">Portal da empresa</button>
+      <button data-page="relatorios">Relatórios</button>
+      <button data-page="auditoria">Histórico de alterações</button>
+    </nav>
+    <div class="user-card">
+      <strong>Júnior Melo</strong>
+      <span>Administrador</span>
+      <button>Sair</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header>
+      <div>
+        <h2 id="page-title">Dashboard</h2>
+        <p>Controle centralizado do Programa Jovem Aprendiz.</p>
+      </div>
+      <div class="search-box">
+        <input type="text" placeholder="Pesquisar aprendiz, empresa ou contrato..." />
+      </div>
+    </header>
+
+    <section id="dashboard" class="page active">
+      <div class="cards">
+        <article><span>Empresas ativas</span><strong id="empresasAtivas">12</strong><small>Parcerias vigentes</small></article>
+        <article><span>Aprendizes ativos</span><strong id="aprendizesAtivos">84</strong><small>Contratos em andamento</small></article>
+        <article><span>Contratos a vencer</span><strong id="contratosVencer">09</strong><small>Próximos 90 dias</small></article>
+        <article><span>Frequência crítica</span><strong id="freqCritica">06</strong><small>Abaixo do mínimo interno</small></article>
+      </div>
+
+      <div class="grid two">
+        <article class="panel">
+          <div class="panel-head"><h3>Aprendizes por empresa</h3><button>Exportar</button></div>
+          <div class="bar-list" id="barList"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><h3>Alertas importantes</h3><button>Ver todos</button></div>
+          <ul class="alerts">
+            <li><b>Contrato a vencer:</b> 3 aprendizes da Empresa Alfa vencem em até 30 dias.</li>
+            <li><b>Frequência:</b> 2 aprendizes estão em situação crítica neste mês.</li>
+            <li><b>Documentos:</b> 5 contratos pendentes de anexação em PDF.</li>
+            <li><b>Desempenho:</b> 4 aprendizes em acompanhamento pedagógico.</li>
+          </ul>
+        </article>
+      </div>
+
+      <article class="panel">
+        <div class="panel-head"><h3>Últimos registros de frequência</h3><button>Novo lançamento</button></div>
+        <table>
+          <thead><tr><th>Aprendiz</th><th>Empresa</th><th>Mês</th><th>Presenças</th><th>Faltas</th><th>Situação</th></tr></thead>
+          <tbody>
+            <tr><td>Ana Beatriz</td><td>Mercado Central</td><td>04/2026</td><td>4</td><td>0</td><td><span class="tag ok">Regular</span></td></tr>
+            <tr><td>Carlos Henrique</td><td>Super Norte</td><td>04/2026</td><td>2</td><td>2</td><td><span class="tag danger">Crítico</span></td></tr>
+            <tr><td>Maria Eduarda</td><td>Comercial Pará</td><td>04/2026</td><td>3</td><td>1</td><td><span class="tag warn">Atenção</span></td></tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section id="empresas" class="page">
+      <article class="panel">
+        <div class="panel-head"><h3>Cadastro de empresa parceira</h3><button>Salvar empresa</button></div>
+        <div class="form-grid">
+          <label>Razão social<input placeholder="Empresa Exemplo Ltda" /></label>
+          <label>CNPJ<input placeholder="00.000.000/0001-00" /></label>
+          <label>Responsável legal<input placeholder="Nome do responsável" /></label>
+          <label>E-mail<input placeholder="empresa@email.com" /></label>
+          <label>Início da parceria<input type="date" /></label>
+          <label>Fim da parceria<input type="date" /></label>
+          <label>Status<select><option>Ativa</option><option>Suspensa</option><option>Encerrada</option></select></label>
+          <label>Contrato em PDF<input type="file" /></label>
+        </div>
+      </article>
+    </section>
+
+    <section id="aprendizes" class="page">
+      <article class="panel">
+        <div class="panel-head"><h3>Cadastro de aprendiz</h3><button>Salvar aprendiz</button></div>
+        <div class="form-grid">
+          <label>Empresa<select><option>Selecionar empresa</option><option>Mercado Central</option></select></label>
+          <label>Nome completo<input /></label>
+          <label>CPF<input /></label>
+          <label>Ocupação/Função<input placeholder="Atendente de Lojas e Mercados" /></label>
+          <label>CBO<input placeholder="5211-05" /></label>
+          <label>Dia da aula teórica<select><option>Segunda-feira</option><option>Terça-feira</option><option>Quarta-feira</option></select></label>
+          <label>Horário da aula<input placeholder="08h às 12h" /></label>
+          <label>Contrato do aprendiz<input type="file" /></label>
+        </div>
+      </article>
+    </section>
+
+    <section id="frequencia" class="page">
+      <article class="panel">
+        <div class="panel-head"><h3>Lançamento de frequência mensal</h3><button>Registrar frequência</button></div>
+        <div class="form-grid">
+          <label>Mês de referência<input type="month" /></label>
+          <label>Empresa<select><option>Selecionar empresa</option><option>Mercado Central</option></select></label>
+          <label>Aprendiz<select><option>Selecionar aprendiz vinculado</option></select></label>
+          <label>Aulas previstas<input type="number" /></label>
+          <label>Presenças<input type="number" /></label>
+          <label>Faltas<input type="number" /></label>
+          <label>Faltas justificadas<input type="number" /></label>
+          <label>Anexar justificativa<input type="file" /></label>
+        </div>
+      </article>
+    </section>
+
+    <section id="desempenho" class="page">
+      <article class="panel">
+        <div class="panel-head"><h3>Análise de desempenho nas aulas teóricas</h3><button>Salvar análise</button></div>
+        <div class="form-grid">
+          <label>Empresa<select><option>Selecionar empresa</option></select></label>
+          <label>Aprendiz<select><option>Selecionar aprendiz</option></select></label>
+          <label>Participação<select><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <label>Pontualidade<select><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <label>Comprometimento<select><option>Satisfatório</option><option>Em acompanhamento</option><option>Insatisfatório</option></select></label>
+          <label class="wide">Observações<textarea placeholder="Registrar análise do instrutor..."></textarea></label>
+        </div>
+      </article>
+    </section>
+
+    <section id="contratos" class="page"><article class="panel"><h3>Contratos e documentos</h3><p>Espaço para anexar contrato da empresa, contrato do aprendiz e documentos complementares.</p></article></section>
+    <section id="portal" class="page"><article class="panel"><h3>Portal da empresa parceira</h3><p>A empresa visualiza apenas seus aprendizes, frequência, desempenho, contratos e comunicados.</p></article></section>
+    <section id="relatorios" class="page"><article class="panel"><h3>Relatórios</h3><p>Exportação em PDF/Excel: empresas, aprendizes, frequência, desempenho e contratos a vencer.</p></article></section>
+    <section id="auditoria" class="page"><article class="panel"><h3>Histórico de alterações</h3><p>Registro de usuário, data/hora, campo alterado, dado anterior e dado novo.</p></article></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
