@@ -45,7 +45,7 @@ async function loadDashboard() {
     document.getElementById('aprendizesAtivos').textContent = data.aprendizes_ativos;
     document.getElementById('contratosVencer').textContent = data.contratos_a_vencer_90_dias;
     document.getElementById('freqCritica').textContent = data.frequencia_critica;
-    renderBars(data.aprendizes_por_empresa.length ? data.aprendizes_por_empresa.map(x => ({empresa:x.empresa, total:x.total})) : []);
+    renderBars(data.aprendizes_por_empresa.length ? data.aprendizes_por_empresa.map(x => ({ empresa: x.empresa, total: x.total })) : []);
   } catch (error) {
     mockBars();
   }
