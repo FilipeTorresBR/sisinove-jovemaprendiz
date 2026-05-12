@@ -31,8 +31,8 @@ export default function LoginPage() {
       ></img>
       <form className="login-card" onSubmit={handleSubmit}>
         <div>
-          <h1>SISQ+</h1>
-          <p>Dashboard ISO 9001 da Sisinove</p>
+          <h1>SISAPRENDIZ</h1>
+          <p>Dashboard Jovem Aprendiz da Sisinove</p>
         </div>
 
         <label>

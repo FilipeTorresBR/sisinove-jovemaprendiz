@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <header className="page-header">
         <div>
           <h1>Dashboard da Qualidade</h1>
-          <p>Visão executiva da ISO 9001 para a operação da Sisinove.</p>
+          <p>Visão executiva do SISAPRENDIZ a operação da Sisinove.</p>
         </div>
       </header>
 
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             {data.recentAudits.map((item) => (
               <div key={item.id} className="simple-list-item">
                 <strong>{item.code} — {item.sector}</strong>
-                <span>{item.audit_type} | {item.status} | {item.planned_date?.slice(0,10)}</span>
+                <span>{item.audit_type} | {item.status} | {item.planned_date?.slice(0, 10)}</span>
               </div>
             ))}
           </div>

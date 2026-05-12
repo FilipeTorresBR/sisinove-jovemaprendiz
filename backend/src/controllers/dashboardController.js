@@ -1,49 +1,87 @@
 import { query } from '../db/index.js';
 
 export async function getDashboard(req, res) {
-  const [documents, audits, findings, complaints, indicators, actions, risks, processes, purchases] = await Promise.all([
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = 'Aprovado')::int AS approved, COUNT(*) FILTER (WHERE next_review <= CURRENT_DATE + INTERVAL '30 day')::int AS expiring FROM documents`),
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = 'Planejada')::int AS planned, COUNT(*) FILTER (WHERE status = 'Concluída')::int AS finished FROM audits`),
-    query(`SELECT COUNT(*) FILTER (WHERE finding_type = 'Conformidade')::int AS conformities, COUNT(*) FILTER (WHERE finding_type = 'Não conformidade')::int AS nonconformities FROM audit_findings`),
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status != 'Resolvida')::int AS open FROM complaints`),
-    query(`SELECT * FROM indicators ORDER BY id`),
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status != 'Concluída')::int AS open FROM actions`),
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE score >= 16)::int AS high FROM risks`),
-    query(`SELECT COUNT(*)::int AS total FROM processes`),
-    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = 'Em cotação')::int AS pending FROM purchases`)
+  const [empresas, aprendizes, frequencias, desempenhos, auditoria] = await Promise.all([
+    // Métricas de Empresas
+    query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status = 'ativa')::int AS ativas FROM empresas`),
+
+    // Métricas de Aprendizes
+    query(`SELECT 
+            COUNT(*)::int AS total, 
+            COUNT(*) FILTER (WHERE status = 'ativo')::int AS ativos,
+            COUNT(*) FILTER (WHERE data_fim_contrato <= CURRENT_DATE + INTERVAL '30 day')::int AS vencendo 
+           FROM aprendizes`),
+
+    // Métricas de Frequência (Mês atual ou último registrado)
+    query(`SELECT 
+            AVG(percentual_frequencia)::float AS media_geral,
+            COUNT(*) FILTER (WHERE situacao = 'critico')::int AS frequencia_critica 
+           FROM frequencias 
+           WHERE mes_referencia = to_char(CURRENT_DATE, 'YYYY-MM')`),
+
+    // Métricas de Desempenho
+    query(`SELECT 
+            COUNT(*) FILTER (WHERE avaliacao_geral = 'excelente' OR avaliacao_geral = 'bom')::int AS alto_desempenho,
+            COUNT(*) FILTER (WHERE avaliacao_geral = 'insatisfatorio')::int AS baixo_desempenho 
+           FROM desempenhos`),
+
+    // Auditoria recente
+    query(`SELECT COUNT(*)::int AS total_alteracoes FROM auditoria_alteracoes WHERE data_hora > CURRENT_DATE - INTERVAL '7 day'`)
+  ]);
+
+  // Consultas adicionais para gráficos e tabelas
+  const [rankingEmpresas, frequenciaPorMes, ultimasAlteracoes] = await Promise.all([
+    query(`SELECT e.nome_fantasia AS name, COUNT(a.id)::int AS value 
+           FROM empresas e 
+           LEFT JOIN aprendizes a ON e.id = a.empresa_id 
+           GROUP BY e.nome_fantasia 
+           ORDER BY value DESC LIMIT 5`),
+
+    query(`SELECT mes_referencia AS name, AVG(percentual_frequencia)::float AS media 
+           FROM frequencias 
+           GROUP BY mes_referencia 
+           ORDER BY mes_referencia DESC LIMIT 6`),
+
+    query(`SELECT usuario, acao, tabela, data_hora FROM auditoria_alteracoes ORDER BY data_hora DESC LIMIT 6`)
   ]);
 
   res.json({
     cards: {
-      processosMapeados: processes.rows[0].total,
-      naoConformidadesAbertas: findings.rows[0].nonconformities,
-      auditoriasPendentes: audits.rows[0].planned,
-      reclamacoesAbertas: complaints.rows[0].open,
-      indicadoresTotal: indicators.rows.length,
-      planosAcaoEmAndamento: actions.rows[0].open,
-      documentosVencendo: documents.rows[0].expiring,
-      comprasPendentes: purchases.rows[0].pending,
-      riscosAltos: risks.rows[0].high
+      totalEmpresas: empresas.rows[0].total,
+      empresasAtivas: empresas.rows[0].ativas,
+      totalAprendizes: aprendizes.rows[0].total,
+      aprendizesAtivos: aprendizes.rows[0].ativos,
+      contratosVencendo: aprendizes.rows[0].vencendo,
+      mediaFrequenciaMensal: frequencias.rows[0].media_geral || 0,
+      frequenciasCriticas: frequencias.rows[0].frequencia_critica,
+      baixoDesempenho: desempenhos.rows[0].baixo_desempenho,
+      alteracoesSemana: auditoria.rows[0].total_alteracoes
     },
     charts: {
-      findings: [
-        { name: 'Conformidades', value: findings.rows[0].conformities },
-        { name: 'Não conformidades', value: findings.rows[0].nonconformities }
+      // Distribuição de aprendizes por empresa
+      aprendizesPorEmpresa: rankingEmpresas.rows,
+
+      // Evolução da frequência média
+      evolucaoFrequencia: frequenciaPorMes.rows.reverse(),
+
+      // Status dos aprendizes (Pizza)
+      statusAprendizes: [
+        { name: 'Ativos', value: aprendizes.rows[0].ativos },
+        { name: 'Total', value: aprendizes.rows[0].total - aprendizes.rows[0].ativos }
       ],
-      indicators: indicators.rows.map((item) => ({
-        name: item.name,
-        meta: Number(item.target_value),
-        atual: Number(item.current_value)
-      })),
-      complaintsBySector: (await query(`SELECT sector AS name, COUNT(*)::int AS total FROM complaints GROUP BY sector ORDER BY total DESC`)).rows,
-      auditStatus: [
-        { name: 'Planejadas', value: audits.rows[0].planned },
-        { name: 'Concluídas', value: audits.rows[0].finished }
-      ],
-      actionsProgress: (await query(`SELECT title AS name, progress::int AS progresso FROM actions ORDER BY progress DESC LIMIT 5`)).rows
+
+      // Desempenho Geral
+      performanceGeral: [
+        { name: 'Bom/Excelente', value: desempenhos.rows[0].alto_desempenho },
+        { name: 'Insatisfatório', value: desempenhos.rows[0].baixo_desempenho }
+      ]
     },
-    recentAudits: (await query(`SELECT * FROM audits ORDER BY planned_date DESC LIMIT 5`)).rows,
-    openActions: (await query(`SELECT id, title, module_name, who_name, when_date, status, progress FROM actions ORDER BY when_date ASC LIMIT 6`)).rows,
-    indicatorsTable: indicators.rows
+    recentActivity: ultimasAlteracoes.rows,
+    proximosVencimentos: (await query(`
+      SELECT nome, data_fim_contrato, email 
+      FROM aprendizes 
+      WHERE data_fim_contrato >= CURRENT_DATE 
+      ORDER BY data_fim_contrato ASC LIMIT 5
+    `)).rows
   });
 }

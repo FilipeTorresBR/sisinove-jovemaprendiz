@@ -1,167 +1,94 @@
+-- Habilitar extensões se necessário (opcional)
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS empresas (
+    id SERIAL PRIMARY KEY,
+    razao_social TEXT NOT NULL,
+    nome_fantasia TEXT,
+    cnpj TEXT UNIQUE,
+    cidade TEXT,
+    uf VARCHAR(2) DEFAULT 'PA',
+    telefone TEXT,
+    email TEXT,
+    responsavel_legal TEXT,
+    responsavel_acompanhamento TEXT,
+    data_inicio_parceria DATE,
+    data_fim_parceria DATE,
+    status TEXT DEFAULT 'ativa',
+    observacoes TEXT,
+    contrato_pdf TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS aprendizes (
+    id SERIAL PRIMARY KEY,
+    empresa_id INTEGER NOT NULL,
+    nome TEXT NOT NULL,
+    cpf TEXT UNIQUE,
+    rg TEXT,
+    data_nascimento DATE,
+    telefone TEXT,
+    email TEXT,
+    endereco TEXT,
+    responsavel_menor TEXT,
+    ocupacao TEXT,
+    cbo TEXT,
+    programa TEXT,
+    carga_horaria_pratica TEXT,
+    carga_horaria_teorica TEXT,
+    dia_aula_teorica TEXT,
+    horario_aula_teorica TEXT,
+    local_aula_teorica TEXT DEFAULT 'Laboratório de Informática SISINOVE',
+    data_inicio_contrato DATE,
+    data_fim_contracto DATE,
+    status TEXT DEFAULT 'ativo',
+    contrato_pdf TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_empresa FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS frequencias (
+    id SERIAL PRIMARY KEY,
+    aprendiz_id INTEGER NOT NULL,
+    empresa_id INTEGER NOT NULL,
+    mes_referencia VARCHAR(7) NOT NULL, -- Formato 'YYYY-MM'
+    aulas_previstas INTEGER DEFAULT 0,
+    presencas INTEGER DEFAULT 0,
+    faltas INTEGER DEFAULT 0,
+    faltas_justificadas INTEGER DEFAULT 0,
+    atrasos INTEGER DEFAULT 0,
+    percentual_frequencia DECIMAL(5, 2) DEFAULT 0,
+    situacao TEXT DEFAULT 'regular',
+    observacoes TEXT,
+    anexo_justificativa TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aprendiz FOREIGN KEY (aprendiz_id) REFERENCES aprendizes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_empresa_freq FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS desempenhos (
+    id SERIAL PRIMARY KEY,
+    aprendiz_id INTEGER NOT NULL,
+    empresa_id INTEGER NOT NULL,
+    mes_referencia VARCHAR(7) NOT NULL,
+    participacao INTEGER DEFAULT 0,
+    pontualidade INTEGER DEFAULT 0,
+    comprometimento INTEGER DEFAULT 0,
+    comunicacao INTEGER DEFAULT 0,
+    relacionamento INTEGER DEFAULT 0,
+    atividades INTEGER DEFAULT 0,
+    avaliacao_geral TEXT DEFAULT 'satisfatorio',
+    observacoes_instrutor TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_aprendiz_desp FOREIGN KEY (aprendiz_id) REFERENCES aprendizes (id) ON DELETE CASCADE,
+    CONSTRAINT fk_empresa_desp FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(120) NOT NULL,
-  email VARCHAR(150) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role VARCHAR(60) NOT NULL DEFAULT 'admin',
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS documents (
-  id SERIAL PRIMARY KEY,
-  code VARCHAR(30) NOT NULL,
-  title VARCHAR(200) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  version VARCHAR(20) NOT NULL,
-  status VARCHAR(40) NOT NULL,
-  owner_name VARCHAR(120),
-  next_review DATE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS suppliers (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
-  category VARCHAR(80),
-  score NUMERIC(5,2) DEFAULT 0,
-  active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS purchases (
-  id SERIAL PRIMARY KEY,
-  request_number VARCHAR(30) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  item_description TEXT NOT NULL,
-  supplier_id INTEGER REFERENCES suppliers(id),
-  status VARCHAR(40) NOT NULL,
-  total_amount NUMERIC(12,2) DEFAULT 0,
-  requested_by VARCHAR(120),
-  requested_at DATE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS indicators (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  unit VARCHAR(20) NOT NULL,
-  target_value NUMERIC(12,2) NOT NULL,
-  current_value NUMERIC(12,2) NOT NULL,
-  trend VARCHAR(20) NOT NULL,
-  status VARCHAR(20) NOT NULL,
-  month_label VARCHAR(20) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS audits (
-  id SERIAL PRIMARY KEY,
-  code VARCHAR(30) NOT NULL,
-  audit_type VARCHAR(40) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  auditor_name VARCHAR(120) NOT NULL,
-  planned_date DATE NOT NULL,
-  status VARCHAR(40) NOT NULL,
-  summary TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS audit_findings (
-  id SERIAL PRIMARY KEY,
-  audit_id INTEGER NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
-  clause_ref VARCHAR(40),
-  description TEXT NOT NULL,
-  finding_type VARCHAR(30) NOT NULL,
-  severity VARCHAR(20) NOT NULL,
-  evidence TEXT,
-  responsible_name VARCHAR(120),
-  due_date DATE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS complaints (
-  id SERIAL PRIMARY KEY,
-  protocol VARCHAR(30) NOT NULL,
-  customer_name VARCHAR(120) NOT NULL,
-  channel VARCHAR(60) NOT NULL,
-  category VARCHAR(80) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  priority VARCHAR(20) NOT NULL,
-  status VARCHAR(30) NOT NULL,
-  description TEXT NOT NULL,
-  solution TEXT,
-  opened_at DATE,
-  closed_at DATE,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS processes (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  owner_name VARCHAR(120),
-  objective TEXT,
-  risk_level VARCHAR(20),
-  performance_status VARCHAR(20),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS management_reviews (
-  id SERIAL PRIMARY KEY,
-  meeting_date DATE NOT NULL,
-  chairperson VARCHAR(120) NOT NULL,
-  agenda TEXT NOT NULL,
-  decisions TEXT,
-  status VARCHAR(30) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS actions (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(200) NOT NULL,
-  module_name VARCHAR(80) NOT NULL,
-  what_text TEXT NOT NULL,
-  why_text TEXT NOT NULL,
-  where_text TEXT,
-  when_date DATE,
-  who_name VARCHAR(120),
-  how_text TEXT,
-  how_much NUMERIC(12,2),
-  status VARCHAR(30) NOT NULL,
-  progress INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS risks (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(200) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  probability INTEGER NOT NULL,
-  impact INTEGER NOT NULL,
-  score INTEGER NOT NULL,
-  category VARCHAR(50) NOT NULL,
-  mitigation_plan TEXT,
-  status VARCHAR(30) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS opportunities (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(200) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  expected_gain TEXT,
-  priority VARCHAR(20) NOT NULL,
-  status VARCHAR(30) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS changes_log (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(200) NOT NULL,
-  sector VARCHAR(80) NOT NULL,
-  change_type VARCHAR(50) NOT NULL,
-  impact_level VARCHAR(20) NOT NULL,
-  status VARCHAR(30) NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(60) NOT NULL DEFAULT 'admin',
+    created_at TIMESTAMP DEFAULT NOW()
 );

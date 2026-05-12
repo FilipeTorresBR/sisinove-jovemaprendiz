@@ -1,4 +1,4 @@
-# SISQ+ | Sistema de Gestão da Qualidade ISO 9001 da Sisinove
+# SISAPRENDIZ | Sistema de Gestão da Qualidade ISO 9001 da Sisinove
 
 Sistema full stack pronto para hospedagem com foco em ISO 9001, auditoria, documentos, indicadores, reclamações, compras, riscos, oportunidades e mudanças, personalizado para a operação da Sisinove.
 

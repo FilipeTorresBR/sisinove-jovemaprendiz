@@ -1,14 +1,10 @@
 export const modules = {
-  documents: { label: 'Gestão de documentos' },
-  purchases: { label: 'Controle de compras' },
-  indicators: { label: 'Indicadores de desempenho' },
-  audits: { label: 'Gestão de auditorias' },
-  audit_findings: { label: 'Conformidades e não conformidades' },
-  complaints: { label: 'Reclamações de clientes' },
-  processes: { label: 'Gestão de processos' },
-  management_reviews: { label: 'Análises críticas' },
-  actions: { label: 'Plano de ação 5W2H' },
-  risks: { label: 'Análise de riscos' },
-  opportunities: { label: 'Oportunidades' },
-  changes_log: { label: 'Mudanças' }
+  empresas: { label: 'Empresas parceiras' },
+  aprendizes: { label: 'Aprendizes' },
+  frequencia: { label: 'Frequência mensal' },
+  desempenho: { label: 'Desempenho teórico' },
+  contratos: { label: 'Contratos e documentos' },
+  portal: { label: 'Portal da empresa' },
+  relatorios: { label: 'Relatórios' },
+  auditoria: { label: 'Histórico de alterações' },
 };
