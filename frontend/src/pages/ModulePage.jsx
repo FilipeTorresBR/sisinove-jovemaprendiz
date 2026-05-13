@@ -29,7 +29,7 @@ function emptyForm(fields) {
   return Object.fromEntries(fields.map((field) => [field.name, ""]));
 }
 
-function Field({ field, value, onChange }) {
+function Field({ field, value, onChange, options }) {
   if (field.type === "textarea") {
     return (
       <textarea
@@ -39,16 +39,22 @@ function Field({ field, value, onChange }) {
       />
     );
   }
+
   if (field.type === "select") {
+    // Aqui está a mágica: ele tenta pegar do estado dinâmico 'options'
+    // Se não houver nada lá, ele usa as 'options' fixas do resources.js
+    const lista = options?.[field.name] || field.options || [];
+
     return (
       <select
         value={value ?? ""}
         onChange={(e) => onChange(field.name, e.target.value)}
       >
-        <option value="">Selecione</option>
-        {field.options.map((item) => (
-          <option key={item} value={item}>
-            {item}
+        <option value="">Selecione...</option>
+        {lista.map((item) => (
+          <option key={item.id || item} value={item.id || item}>
+            {/* Tenta mostrar razao_social (empresa), nome (aprendiz) ou o próprio item */}
+            {item.razao_social || item.nome || item}
           </option>
         ))}
       </select>
@@ -89,6 +95,7 @@ export default function ModulePage() {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [options, setOptions] = useState({});
 
   async function loadAll() {
     const [metaRes, listRes, reportRes] = await Promise.all([
@@ -96,7 +103,13 @@ export default function ModulePage() {
       api.get(`/resources/${resource}`),
       api.get(`/resources/report/${resource}`),
     ]);
+    const fieldsComLink = metaRes.data.formFields.filter((f) => f.resource);
 
+    for (const field of fieldsComLink) {
+      const res = await api.get(`/resources/${field.resource}`);
+      // Salva no estado usando o nome do campo como chave (ex: options.empresa_id)
+      setOptions((prev) => ({ ...prev, [field.name]: res.data }));
+    }
     const baseUrl = api.defaults.baseURL.replace("/api", "");
 
     const processedRows = listRes.data.map((row) => {
@@ -241,6 +254,7 @@ export default function ModulePage() {
                   field={field}
                   value={form[field.name]}
                   onChange={handleChange}
+                  options={options} // <--- ADICIONE ESTA LINHA EXATAMENTE ASSIM
                 />
               </label>
             ))}

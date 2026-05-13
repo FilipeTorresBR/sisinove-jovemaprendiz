@@ -23,7 +23,7 @@ export default function AppLayout() {
             <div className="brand-mark">S+</div>
             <div>
               <strong>SISAPRENDIZ</strong>
-              <p>Gestão da Qualidade Sisinove</p>
+              <p>Gestão de Jovens Aprendizes</p>
             </div>
           </div>
 

@@ -18,7 +18,7 @@ app.use(helmet());
 app.use(express.json());
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", service: "sisinove-iso-backend" });
+  res.json({ status: "ok", service: "sisinove-jovemaprendiz-backend" });
 });
 
 app.use("/api/auth", authRoutes);
@@ -26,7 +26,7 @@ app.use("/api/dashboard", authMiddleware, dashboardRoutes);
 app.use("/api/resources", authMiddleware, resourceRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4003;
 
 initializeDatabase()
   .then(() => {

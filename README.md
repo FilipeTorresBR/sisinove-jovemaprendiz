@@ -44,14 +44,16 @@ docker compose up --build
 Acessos:
 
 - Frontend: `http://localhost:8080`
-- Backend health: `http://localhost:4000/api/health`
+- Backend health: `http://localhost:4003/api/health`
 
 ## Como rodar sem Docker
 
 ### Banco
+
 Crie um PostgreSQL e use a conexão no arquivo `.env` do backend.
 
 ### Backend
+
 ```bash
 cd backend
 cp .env.example .env
@@ -60,6 +62,7 @@ npm start
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -70,22 +73,27 @@ npm run preview -- --host 0.0.0.0
 ## Rotas principais da API
 
 ### Autenticação
+
 - `POST /api/auth/login`
 
 ### Dashboard
+
 - `GET /api/dashboard`
 
 ### Metadados dos módulos
+
 - `GET /api/resources/meta/all`
 - `GET /api/resources/meta/:resource`
 
 ### CRUD genérico
+
 - `GET /api/resources/:resource`
 - `POST /api/resources/:resource`
 - `PUT /api/resources/:resource/:id`
 - `DELETE /api/resources/:resource/:id`
 
 ### Relatórios
+
 - `GET /api/resources/report/:resource`
 - `GET /api/resources/audits/:id/report`
 

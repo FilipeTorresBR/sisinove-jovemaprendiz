@@ -1,5 +1,4 @@
 import { Router } from "express";
-// IMPORTANTE: Importe o middleware de upload que você criou
 import { upload } from "../middleware/multer.js";
 import {
   listResource,
@@ -9,20 +8,32 @@ import {
   getResourceMeta,
   listResourcesMetadata,
   getResourceReport,
-  getAuditReport,
 } from "../controllers/resourceController.js";
 
 const router = Router();
 
+// --- Rotas de Metadados ---
+// Retorna a configuração de todos os módulos (usado para montar menus)
 router.get("/meta/all", listResourcesMetadata);
+
+// Retorna a configuração específica de um módulo (campos, labels, etc)
 router.get("/meta/:resource", getResourceMeta);
+
+// --- Rotas de Dados ---
+// Gera os dados para os gráficos do painel lateral
 router.get("/report/:resource", getResourceReport);
-router.get("/audits/:id/report", getAuditReport);
+
+// Lista os registros de um recurso (ex: GET /api/resources/aprendizes)
 router.get("/:resource", listResource);
 
+// Cria um novo registro (Suporta upload de arquivo no campo 'attachments' ou 'attachments')
+// Se o seu campo no resources.js se chama 'attachments', mude .single("attachments") para .single("attachments")
 router.post("/:resource", upload.single("attachments"), createResource);
+
+// Atualiza um registro existente
 router.put("/:resource/:id", upload.single("attachments"), updateResource);
 
+// Remove um registro
 router.delete("/:resource/:id", deleteResource);
 
 export default router;
