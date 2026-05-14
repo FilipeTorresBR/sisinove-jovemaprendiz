@@ -40132,7 +40132,7 @@ function Oee() {
                 }),
                 E.jsx("p", {
                   children:
-                    "Módulo operacional da Sisinove com cadastro, edição, gráficos e relatório gerencial.",
+                    "",
                 }),
               ],
             }),

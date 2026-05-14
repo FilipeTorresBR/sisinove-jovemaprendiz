@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS aprendizes (
     cbo TEXT,
     dia_aula_teorica TEXT,
     horario_aula_teorica TEXT,
+    data_inicio_contrato DATE,
+    data_fim_contrato DATE,
     status TEXT DEFAULT 'ativo',
     attachments TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -59,6 +61,21 @@ CREATE TABLE IF NOT EXISTS desempenhos (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_aprendiz_desp FOREIGN KEY (aprendiz_id) REFERENCES aprendizes (id) ON DELETE CASCADE,
     CONSTRAINT fk_empresa_desp FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS curriculos (
+    id SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL,
+    nascimento DATE,
+    cpf TEXT UNIQUE,
+    endereco TEXT,
+    cidade TEXT,
+    estado TEXT,
+    email TEXT,
+    telefone TEXT,
+    ctps_assinada TEXT,
+    escolaridade TEXT,
+    attachments TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS users (
