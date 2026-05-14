@@ -4,8 +4,8 @@ import api from "../services/api";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
-    email: "admin@sisinove.com.br",
-    password: "123456",
+    email: "",
+    password: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -55,7 +55,6 @@ export default function LoginPage() {
         {error && <div className="error-box">{error}</div>}
 
         <button type="submit">Entrar</button>
-        <small>Usuário inicial: admin@sisinove.com.br | Senha: 123456</small>
       </form>
     </div>
   );

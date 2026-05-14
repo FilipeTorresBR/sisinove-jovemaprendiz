@@ -38,8 +38,8 @@ export default function DashboardPage() {
 
       <section className="charts-grid" style={{ gridTemplateColumns: "1fr" }}>
         <ChartBox title="Aprendizes por empresa">
-          <div className="chart-area" style={{ padding: "10px" }}>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="chart-area" style={{ padding: "10px",  }}>
+            <ResponsiveContainer width="100%" >
               {/* O layout="vertical" permite barras horizontais */}
               <BarChart
                 data={data.charts.aprendizesPorEmpresa}
@@ -56,10 +56,10 @@ export default function DashboardPage() {
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={120}
+                  width={620}
                   tick={{ fontSize: 13, fill: "#666" }}
-                  axisLine={false}
-                  tickLine={false}
+                  axisLine={true}
+                  tickLine={true}
                 />
 
                 {/* O valor numérico vai para o eixo X */}
