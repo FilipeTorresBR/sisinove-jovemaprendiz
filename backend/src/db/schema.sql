@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS curriculos (
     nascimento DATE,
     cpf TEXT UNIQUE,
     endereco TEXT,
+    interesse TEXT,
     cidade TEXT,
     estado TEXT,
     email TEXT,

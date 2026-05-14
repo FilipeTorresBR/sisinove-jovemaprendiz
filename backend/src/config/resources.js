@@ -162,6 +162,7 @@ export const resources = {
       { name: "nome", label: "Nome Completo", type: "text" },
       { name: "cpf", label: "CPF", type: "text" },
       { name: "nascimento", label: "Data de Nascimento", type: "date" },
+      { name: "interesse", label: "Área de interesse", type: "text" },
       { name: "endereco", label: "Endereço", type: "text" },
       { name: "cidade", label: "Cidade", type: "select", options: ['Tucuruí', 'Outra'] },
       { name: "estado", label: "Estado", type: "select", options: ['Pará', 'Outro'] },
