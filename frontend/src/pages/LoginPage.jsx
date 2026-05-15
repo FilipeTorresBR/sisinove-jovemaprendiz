@@ -16,19 +16,23 @@ export default function LoginPage() {
     try {
       localStorage.clear();
       const { data } = await api.post("/auth/login", form);
+      
       localStorage.setItem("sisq_token", data.token);
       localStorage.setItem("sisq_user", JSON.stringify(data.user));
       
-      if (data.user.role.toLowerCase() === 'admin') {
-        navigate("/"); // Admin continua indo para o Dashboard
-      } else {
-        navigate("/modulo/aprendizes"); // Empresa vai direto para a lista de aprendizes
-      }
+      // DETERMINA O DESTINO
+      const destination = data.user.role.toLowerCase() === 'admin' 
+        ? "/" 
+        : "/modulo/aprendizes";
+
+      // EM VEZ DE navigate(destination), usamos:
+      window.location.href = destination;
+
     } catch (e) {
       setError(e.response?.data?.message || "Falha ao entrar.");
     }
   }
-
+  
   return (
     <div className="login-screen">
       <img
