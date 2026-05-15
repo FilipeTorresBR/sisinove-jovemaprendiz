@@ -24,6 +24,8 @@ const colors = [
   "#e74c3c",
   "#16a085",
 ];
+const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
+const isAdmin = user.role?.toLowerCase() === "admin";
 
 function emptyForm(fields) {
   return Object.fromEntries(fields.map((field) => [field.name, ""]));
@@ -230,8 +232,8 @@ export default function ModulePage() {
           </p>
         </div>
       </header>
-
       <section className="module-top-grid">
+        {isAdmin && (
         <div className="panel">
           <div className="panel-header">
             <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>
@@ -267,7 +269,7 @@ export default function ModulePage() {
             </div>
           </form>
         </div>
-
+        )}
         <div className="panel">
           <div className="panel-header">
             <h3>{report.chart.title}</h3>

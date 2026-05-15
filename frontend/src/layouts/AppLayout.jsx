@@ -1,5 +1,7 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { modules } from "../config/resources";
+const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
+const isAdmin = user.role?.toLowerCase() === "admin";
 
 export default function AppLayout() {
   const navigate = useNavigate();
@@ -40,9 +42,11 @@ export default function AppLayout() {
           </div>
 
           <nav className="nav-menu">
+            {isAdmin && (
             <NavLink to="/" end>
               Dashboard
             </NavLink>
+            )}
 
             {Object.entries(modules)
               .filter(([_, item]) => canAccess(item)) // Filtra baseado na role

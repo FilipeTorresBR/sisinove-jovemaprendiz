@@ -164,26 +164,47 @@ export async function deleteResource(req, res) {
 }
 
 export async function getResourceReport(req, res) {
-  const current = getResourceConfig(req.params.resource);
-  if (!current)
-    return res.status(404).json({ message: "Recurso não encontrado." });
+  try {
+    const { resource } = req.params;
+    const { role, empresa_id } = req.user; // Dados vindos do Token JWT
+    const current = getResourceConfig(resource);
 
-  // Query genérica para os gráficos do painel lateral
-  const summaryRows = await query(
-    `SELECT ${current.chart.groupBy}::text AS label, COUNT(*)::int AS total 
-     FROM ${current.table} 
-     GROUP BY ${current.chart.groupBy} 
-     ORDER BY total DESC`,
-  );
+    if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
 
-  const totalRows = await query(
-    `SELECT COUNT(*)::int AS total FROM ${current.table}`,
-  );
+    // 1. Definimos o filtro baseado na role
+    let whereClause = "";
+    let params = [];
 
-  res.json({
-    resource: req.params.resource,
-    label: current.label,
-    total: totalRows.rows[0].total,
-    chart: { ...current.chart, data: summaryRows.rows },
-  });
+    if (role !== 'admin') {
+      // Se for empresa, filtramos pela coluna empresa_id
+      whereClause = `WHERE empresa_id = $1`;
+      params.push(empresa_id);
+    }
+
+    // 2. Query dos dados do gráfico (Grupamento)
+    const summaryRows = await query(
+      `SELECT ${current.chart.groupBy}::text AS label, COUNT(*)::int AS total 
+       FROM ${current.table} 
+       ${whereClause}
+       GROUP BY ${current.chart.groupBy} 
+       ORDER BY total DESC`,
+      params
+    );
+
+    // 3. Query do total de registros
+    const totalRows = await query(
+      `SELECT COUNT(*)::int AS total FROM ${current.table} ${whereClause}`,
+      params
+    );
+
+    res.json({
+      resource,
+      label: current.label,
+      total: totalRows.rows[0].total,
+      chart: { ...current.chart, data: summaryRows.rows },
+    });
+  } catch (error) {
+    console.error("Erro no report:", error);
+    res.status(500).json({ message: "Erro ao gerar relatório estatístico." });
+  }
 }

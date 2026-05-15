@@ -52,5 +52,4 @@ export async function seedDatabase() {
     VALUES ($1, $2, $3, $4, $5, $6)
   `, [aprendizId, empresaId, '2024-05', 9, 10, 'excelente']);
 
-  console.log("✨ Seed finalizado com sucesso!");
 }
