@@ -15,12 +15,10 @@ function buildPayload(body, fields, file = null) {
     if (Object.prototype.hasOwnProperty.call(body, field.name)) {
       let value = body[field.name];
 
-      // Limpeza de strings vindas de FormData
       if (value === "" || value === "null" || value === "undefined") {
         value = null;
       }
 
-      // Garante que campos numéricos sejam números e não strings
       if (field.type === "number" && value !== null) {
         value = Number(value);
       }
@@ -49,7 +47,7 @@ export async function getResourceMeta(req, res) {
 export async function listResource(req, res) {
   try {
     const { resource } = req.params;
-    const { role, empresa_id } = req.user; // Certifique-se que o login grava o empresa_id no token
+    const { role, empresa_id } = req.user; 
     const current = getResourceConfig(resource);
 
     if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
@@ -81,10 +79,11 @@ export async function listResource(req, res) {
       }
     }
     else {
-      // Para qualquer outra tabela genérica
+      // Para qualquer outra tabela genérica (incluindo currículos)
       sql = `SELECT * FROM ${current.table}`;
-      if (role !== 'admin') {
-        // Assume que a tabela tem uma coluna empresa_id
+      
+      // EXCEÇÃO: Se for 'curriculos', NÃO adiciona filtro de empresa_id para não-admins
+      if (role !== 'admin' && resource !== 'curriculos') {
         conditions.push(`empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
@@ -111,7 +110,8 @@ export async function createResource(req, res) {
 
   const payload = buildPayload(req.body, current.formFields, req.file);
 
-  if (role !== 'admin' && (payload.empresa_id || req.params.resource === 'frequencias')) {
+  // Garante que se uma empresa criar algo, o ID dela seja injetado (exceto em curriculos)
+  if (role !== 'admin' && req.params.resource !== 'curriculos' && (payload.empresa_id || req.params.resource === 'frequencias')) {
     payload.empresa_id = empresa_id;
   }
 
@@ -166,22 +166,20 @@ export async function deleteResource(req, res) {
 export async function getResourceReport(req, res) {
   try {
     const { resource } = req.params;
-    const { role, empresa_id } = req.user; // Dados vindos do Token JWT
+    const { role, empresa_id } = req.user; 
     const current = getResourceConfig(resource);
 
     if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
 
-    // 1. Definimos o filtro baseado na role
     let whereClause = "";
     let params = [];
 
-    if (role !== 'admin') {
-      // Se for empresa, filtramos pela coluna empresa_id
+    // EXCEÇÃO: Currículos mostram gráfico global para todos
+    if (role !== 'admin' && resource !== 'curriculos') {
       whereClause = `WHERE empresa_id = $1`;
       params.push(empresa_id);
     }
 
-    // 2. Query dos dados do gráfico (Grupamento)
     const summaryRows = await query(
       `SELECT ${current.chart.groupBy}::text AS label, COUNT(*)::int AS total 
        FROM ${current.table} 
@@ -191,7 +189,6 @@ export async function getResourceReport(req, res) {
       params
     );
 
-    // 3. Query do total de registros
     const totalRows = await query(
       `SELECT COUNT(*)::int AS total FROM ${current.table} ${whereClause}`,
       params

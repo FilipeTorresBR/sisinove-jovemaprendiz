@@ -29,7 +29,7 @@ router.get("/:resource", authMiddleware, listResource);
 
 // Cria um novo registro (Suporta upload de arquivo no campo 'attachments' ou 'attachments')
 // Se o seu campo no resources.js se chama 'attachments', mude .single("attachments") para .single("attachments")
-router.post("/:resource", authMiddleware, checkRole(['admin', 'empresa']), upload.single("attachments"), createResource);
+router.post("/:resource", authMiddleware, checkRole(['admin', 'empresas']), upload.single("attachments"), createResource);
 // Atualiza um registro existente
 router.put("/:resource/:id", upload.single("attachments"), updateResource);
 
