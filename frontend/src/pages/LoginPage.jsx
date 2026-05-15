@@ -17,7 +17,12 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login", form);
       localStorage.setItem("sisq_token", data.token);
       localStorage.setItem("sisq_user", JSON.stringify(data.user));
-      navigate("/");
+      
+      if (data.user.role.toLowerCase() === 'admin') {
+        navigate("/"); // Admin continua indo para o Dashboard
+      } else {
+        navigate("/modulo/aprendizes"); // Empresa vai direto para a lista de aprendizes
+      }
     } catch (e) {
       setError(e.response?.data?.message || "Falha ao entrar.");
     }
