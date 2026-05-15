@@ -206,13 +206,25 @@ export async function getResourceReport(req, res) {
   }
 }
 export async function getOneResource(req, res) {
-  const { resource, id } = req.params;
-  const { role, empresa_id } = req.user;
+  try {
+    const { resource, id } = req.params;
+    const { role, empresa_id } = req.user;
 
-  if (role === 'empresas' && resource === 'empresas' && parseInt(id) !== empresa_id) {
-    return res.status(403).json({ message: "Você só pode visualizar os dados da sua própria empresa." });
+    // Convertemos ambos para Number para garantir a comparação
+    const idUrl = parseInt(id);
+    const idToken = parseInt(empresa_id);
+
+    // Se for perfil de empresas, verificamos se o ID solicitado é o dele
+    if (role === 'empresas' && resource === 'empresas') {
+      if (idUrl !== idToken) {
+        console.log(`Bloqueio: User idToken ${idToken} tentou acessar idUrl ${idUrl}`);
+        return res.status(403).json({ message: 'Você só pode visualizar os dados da sua própria empresa.' });
+      }
+    }
+
+    const result = await query(`SELECT * FROM ${resource} WHERE id = $1`, [id]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: "Erro ao buscar dados." });
   }
-  
-  const result = await query(`SELECT * FROM ${resource} WHERE id = $1`, [id]);
-  res.json(result.rows[0]);
 }
