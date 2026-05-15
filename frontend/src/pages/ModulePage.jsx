@@ -222,6 +222,7 @@ export default function ModulePage() {
 
   if (!meta || !report)
     return <div className="loading">Carregando módulo...</div>;
+  const canEdit = isAdmin || meta.canCompanyEdit;
 
   return (
     <div>
@@ -232,8 +233,8 @@ export default function ModulePage() {
           </p>
         </div>
       </header>
-      <section className="module-top-grid">
-        {isAdmin && (
+      <section className="module-top-grid" >
+        {canEdit && (
         <div className="panel">
           <div className="panel-header">
             <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>

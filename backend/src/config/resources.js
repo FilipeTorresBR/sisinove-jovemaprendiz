@@ -5,6 +5,7 @@ export const resources = {
     order: "razao_social ASC",
     id: "id",
     roles: ['admin'],
+    canCompanyEdit: false,
     searchable: [
       "razao_social",
       "nome_fantasia",
@@ -41,6 +42,7 @@ export const resources = {
     table: "aprendizes",
     order: "nome ASC",
     roles: ['admin', 'empresas'],
+    canCompanyEdit: false,
     id: "id",
     searchable: ["nome", "cpf", "email", "ocupacao", "status"],
     formFields: [
@@ -69,6 +71,7 @@ export const resources = {
     label: "Frequência Mensal",
     table: "frequencias",
     roles: ['admin', 'empresas'],
+    canCompanyEdit: false,
     order: "mes_referencia DESC",
     id: "id",
     formFields: [
@@ -117,6 +120,7 @@ export const resources = {
     label: "Avaliação de Desempenho",
     table: "desempenhos",
     roles: ['admin', 'empresas'],
+    canCompanyEdit: false,
     order: "criado_em DESC",
     id: "id",
     searchable: ["aprendiz_id"],
@@ -160,6 +164,7 @@ export const resources = {
     label: "Banco de talentos",
     table: "curriculos",
     roles: ['admin', 'empresas'],
+    canCompanyEdit: true,
     order: "criado_em DESC",
     id: "id",
     searchable: ["nome", "cpf",],

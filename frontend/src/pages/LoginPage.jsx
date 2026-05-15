@@ -14,6 +14,7 @@ export default function LoginPage() {
     event.preventDefault();
     setError("");
     try {
+      localStorage.clear();
       const { data } = await api.post("/auth/login", form);
       localStorage.setItem("sisq_token", data.token);
       localStorage.setItem("sisq_user", JSON.stringify(data.user));

@@ -11,10 +11,12 @@ export default function AppLayout() {
   const userRole = (user.role || "").toLowerCase(); // Garantimos que esteja em minúsculo para comparar
 
   const logout = () => {
-    localStorage.removeItem("sisq_token");
-    localStorage.removeItem("sisq_user");
-    navigate("/login");
-  };
+  localStorage.removeItem("sisq_token");
+  localStorage.removeItem("sisq_user");
+  
+  // Em vez de navigate("/login"), use:
+  window.location.href = "/login"; 
+};
 
   // Função para verificar se o usuário tem permissão para ver o item do menu
   const canAccess = (item) => {
