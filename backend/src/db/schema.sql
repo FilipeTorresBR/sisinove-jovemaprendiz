@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS desempenhos (
 CREATE TABLE IF NOT EXISTS curriculos (
     id SERIAL PRIMARY KEY,
     nome TEXT NOT NULL,
-    nascimento DATE,
+    idade NUMERIC,
     cpf TEXT UNIQUE,
     endereco TEXT,
     interesse TEXT,
