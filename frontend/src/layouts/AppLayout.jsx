@@ -3,12 +3,23 @@ import { modules } from "../config/resources";
 
 export default function AppLayout() {
   const navigate = useNavigate();
+
+  // Pegamos o usuário do localStorage
   const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
+  const userRole = (user.role || "").toLowerCase(); // Garantimos que esteja em minúsculo para comparar
 
   const logout = () => {
     localStorage.removeItem("sisq_token");
     localStorage.removeItem("sisq_user");
     navigate("/login");
+  };
+
+  // Função para verificar se o usuário tem permissão para ver o item do menu
+  const canAccess = (item) => {
+    // Se o item não tiver 'roles' definido no config, permitimos por padrão
+    // Ou se a role do usuário estiver na lista de permitidas
+    if (!item.roles) return true;
+    return item.roles.includes(userRole);
   };
 
   return (
@@ -18,7 +29,8 @@ export default function AppLayout() {
           <img
             style={{ width: 200, marginBottom: 5 }}
             src="/src/assets/sisinove-logo-transparente.png"
-          ></img>
+            alt="Logo Sisinove"
+          />
           <div className="brand-box">
             <div className="brand-mark">S+</div>
             <div>
@@ -31,17 +43,20 @@ export default function AppLayout() {
             <NavLink to="/" end>
               Dashboard
             </NavLink>
-            {Object.entries(modules).map(([path, item]) => (
-              <NavLink key={path} to={`/modulo/${path}`}>
-                {item.label}
-              </NavLink>
-            ))}
+
+            {Object.entries(modules)
+              .filter(([_, item]) => canAccess(item)) // Filtra baseado na role
+              .map(([path, item]) => (
+                <NavLink key={path} to={`/modulo/${path}`}>
+                  {item.label}
+                </NavLink>
+              ))}
           </nav>
         </div>
 
         <div className="profile-box">
           <strong>{user.name || "Usuário"}</strong>
-          <span>{user.role || "perfil"}</span>
+          <span style={{ textTransform: 'capitalize' }}>{user.role || "perfil"}</span>
           <button onClick={logout}>Sair</button>
         </div>
       </aside>

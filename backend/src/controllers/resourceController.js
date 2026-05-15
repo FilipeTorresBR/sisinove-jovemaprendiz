@@ -47,44 +47,74 @@ export async function getResourceMeta(req, res) {
 }
 
 export async function listResource(req, res) {
-  const { resource } = req.params;
-  const current = getResourceConfig(resource);
+  try {
+    const { resource } = req.params;
+    const { role, empresa_id } = req.user; // Certifique-se que o login grava o empresa_id no token
+    const current = getResourceConfig(resource);
 
-  if (!current)
-    return res.status(404).json({ message: "Recurso não encontrado." });
+    if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
 
-  // LÓGICA DE JOIN: Se for aprendizes, trazemos o nome da empresa
-  let sql = `SELECT * FROM ${current.table}`;
+    let sql = "";
+    let params = [];
+    let conditions = [];
 
-  if (resource === "aprendizes") {
-    sql = `
-      SELECT a.*, e.razao_social as empresa_nome 
-      FROM aprendizes a 
-      LEFT JOIN empresas e ON e.id = a.empresa_id
-    `;
-  } else if (resource === "frequencias") {
-    sql = `
-      SELECT f.*, a.nome as aprendiz_nome, e.razao_social as empresa_nome 
-      FROM frequencias f
-      JOIN aprendizes a ON a.id = f.aprendiz_id
-      JOIN empresas e ON e.id = f.empresa_id
-    `;
+    // 1. Define a base da Query
+    if (resource === "aprendizes") {
+      sql = `SELECT a.*, e.razao_social as empresa_nome FROM aprendizes a LEFT JOIN empresas e ON e.id = a.empresa_id`;
+      if (role !== 'admin') {
+        conditions.push(`a.empresa_id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
+    }
+    else if (resource === "frequencias") {
+      sql = `SELECT f.*, a.nome as aprendiz_nome, e.razao_social as empresa_nome FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
+      if (role !== 'admin') {
+        conditions.push(`f.empresa_id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
+    }
+    else if (resource === "empresas") {
+      sql = `SELECT * FROM empresas`;
+      if (role !== 'admin') {
+        conditions.push(`id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
+    }
+    else {
+      // Para qualquer outra tabela genérica
+      sql = `SELECT * FROM ${current.table}`;
+      if (role !== 'admin') {
+        // Assume que a tabela tem uma coluna empresa_id
+        conditions.push(`empresa_id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
+    }
+
+    // 2. Aplica as condições WHERE
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    sql += ` ORDER BY ${current.order}`;
+
+    const result = await query(sql, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao listar dados." });
   }
-
-  sql += ` ORDER BY ${current.order}`;
-
-  const result = await query(sql);
-  res.json(result.rows);
 }
 
 export async function createResource(req, res) {
   const current = getResourceConfig(req.params.resource);
-  if (!current)
-    return res.status(404).json({ message: "Recurso não encontrado." });
+  const { role, empresa_id } = req.user;
 
   const payload = buildPayload(req.body, current.formFields, req.file);
 
-  // Lógica específica: Cálculo de Frequência automático
+  if (role !== 'admin' && (payload.empresa_id || req.params.resource === 'frequencias')) {
+    payload.empresa_id = empresa_id;
+  }
+
   if (req.params.resource === "frequencias") {
     const aulas = Number(payload.aulas_previstas || 0);
     const presencas = Number(payload.presencas || 0);

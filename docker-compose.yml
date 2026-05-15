@@ -37,7 +37,7 @@ services:
     environment:
       - VITE_API_URL=http://localhost:4003/api
     ports:
-      - "127.0.0.1:8082:5173" # Mapeia a porta 8082 local para a 5173 do Vite
+      - "127.0.0.1:8083:5173" # Mapeia a porta 8083 local para a 5173 do Vite
     # Adicionamos o comando para rodar o dev server do jovemaprendiz
     command: sh -c "npm install && npm run dev -- --host --port 5173"
 

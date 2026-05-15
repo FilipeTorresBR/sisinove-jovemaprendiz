@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middleware/multer.js";
+import { authMiddleware, checkRole } from "../middleware/auth.js";
 import {
   listResource,
   createResource,
@@ -24,16 +25,14 @@ router.get("/meta/:resource", getResourceMeta);
 router.get("/report/:resource", getResourceReport);
 
 // Lista os registros de um recurso (ex: GET /api/resources/aprendizes)
-router.get("/:resource", listResource);
+router.get("/:resource", authMiddleware, listResource);
 
 // Cria um novo registro (Suporta upload de arquivo no campo 'attachments' ou 'attachments')
 // Se o seu campo no resources.js se chama 'attachments', mude .single("attachments") para .single("attachments")
-router.post("/:resource", upload.single("attachments"), createResource);
-
+router.post("/:resource", authMiddleware, checkRole(['admin', 'empresa']), upload.single("attachments"), createResource);
 // Atualiza um registro existente
 router.put("/:resource/:id", upload.single("attachments"), updateResource);
 
 // Remove um registro
-router.delete("/:resource/:id", deleteResource);
-
+router.delete("/:resource/:id", authMiddleware, checkRole(['admin']), deleteResource);
 export default router;

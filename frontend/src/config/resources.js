@@ -1,7 +1,7 @@
 export const modules = {
-  empresas: { label: "Empresas parceiras" },
-  aprendizes: { label: "Aprendizes" },
-  frequencias: { label: "Frequência mensal" },
-  desempenhos: { label: "Desempenho teórico" },
-  curriculos: { label: "Banco de talentos" },
+  empresas: { label: "Empresas parceiras", roles: ['admin'] },
+  aprendizes: { label: "Aprendizes", roles: ['admin', 'empresas'] },
+  frequencias: { label: "Frequência mensal", roles: ['admin', 'empresas'] },
+  desempenhos: { label: "Desempenho teórico", roles: ['admin', 'empresas'] },
+  curriculos: { label: "Banco de talentos", roles: ['admin', 'empresas'] },
 };

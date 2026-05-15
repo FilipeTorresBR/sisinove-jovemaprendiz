@@ -4,6 +4,7 @@ export const resources = {
     table: "empresas",
     order: "razao_social ASC",
     id: "id",
+    roles: ['admin'],
     searchable: [
       "razao_social",
       "nome_fantasia",
@@ -39,6 +40,7 @@ export const resources = {
     label: "Cadastro de Aprendizes",
     table: "aprendizes",
     order: "nome ASC",
+    roles: ['admin', 'empresas'],
     id: "id",
     searchable: ["nome", "cpf", "email", "ocupacao", "status"],
     formFields: [
@@ -66,6 +68,7 @@ export const resources = {
   frequencias: {
     label: "Frequência Mensal",
     table: "frequencias",
+    roles: ['admin', 'empresas'],
     order: "mes_referencia DESC",
     id: "id",
     formFields: [
@@ -113,6 +116,7 @@ export const resources = {
   desempenhos: {
     label: "Avaliação de Desempenho",
     table: "desempenhos",
+    roles: ['admin', 'empresas'],
     order: "criado_em DESC",
     id: "id",
     searchable: ["aprendiz_id"],
@@ -155,6 +159,7 @@ export const resources = {
   curriculos: {
     label: "Banco de talentos",
     table: "curriculos",
+    roles: ['admin', 'empresas'],
     order: "criado_em DESC",
     id: "id",
     searchable: ["nome", "cpf",],
@@ -169,7 +174,7 @@ export const resources = {
       { name: "email", label: "E-mail", type: "email" },
       { name: "telefone", label: "Telefone", type: "text" },
       { name: "ctps_assinada", label: "Já trabalhou de carteira assinada?", type: "select", options: ['Sim', 'Não'] },
-      { name: "escolaridade", label: "Escolaridade", type: "select", options: ['Fundamental Incompleto', 'Fundamental Completo', 'Ensino Médio Incompleto', 'Ensino Médio Completo', 'Ensino Superior Incompleto' , 'Ensino Superior Completo'] },
+      { name: "escolaridade", label: "Escolaridade", type: "select", options: ['Fundamental Incompleto', 'Fundamental Completo', 'Ensino Médio Incompleto', 'Ensino Médio Completo', 'Ensino Superior Incompleto', 'Ensino Superior Completo'] },
       { name: "attachments", label: "Anexo do curriculo", type: "file" },
     ],
     chart: { type: "bar", groupBy: "escolaridade", title: "Escolaridade" },

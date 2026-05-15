@@ -15,3 +15,12 @@ export function authMiddleware(req, res, next) {
     return res.status(401).json({ message: 'Token inválido.' });
   }
 }
+export const checkRole = (allowedRoles) => {
+  return (req, res, next) => {
+    const userRole = req.user?.role?.toLowerCase();
+    if (!allowedRoles.includes(userRole)) {
+      return res.status(403).json({ message: 'Acesso negado para o seu perfil.' });
+    }
+    next();
+  };
+};
