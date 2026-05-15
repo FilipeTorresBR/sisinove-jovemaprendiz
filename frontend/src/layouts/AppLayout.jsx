@@ -21,7 +21,7 @@ export default function AppLayout() {
       navigate("/");
     } else {
       // Se não for admin, leva para o primeiro módulo que ele tem acesso
-      navigate("/modulo/aprendizes"); 
+      navigate("/empresa-profile"); 
     }
   };
 
@@ -53,6 +53,12 @@ export default function AppLayout() {
             {isAdmin && (
               <NavLink to="/" end>
                 Dashboard
+              </NavLink>
+            )}
+
+            {!isAdmin && user.role === 'empresas' && (
+              <NavLink to="/empresa-profile">
+                Informações do Vínculo
               </NavLink>
             )}
 

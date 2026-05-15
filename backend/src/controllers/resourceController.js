@@ -205,3 +205,14 @@ export async function getResourceReport(req, res) {
     res.status(500).json({ message: "Erro ao gerar relatório estatístico." });
   }
 }
+export async function getOneResource(req, res) {
+  const { resource, id } = req.params;
+  const { role, empresa_id } = req.user;
+
+  if (role === 'empresas' && resource === 'empresas' && parseInt(id) !== empresa_id) {
+    return res.status(403).json({ message: "Você só pode visualizar os dados da sua própria empresa." });
+  }
+  
+  const result = await query(`SELECT * FROM ${resource} WHERE id = $1`, [id]);
+  res.json(result.rows[0]);
+}

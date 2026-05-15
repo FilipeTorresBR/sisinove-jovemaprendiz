@@ -9,6 +9,7 @@ import {
   getResourceMeta,
   listResourcesMetadata,
   getResourceReport,
+  getOneResource,
 } from "../controllers/resourceController.js";
 
 const router = Router();
@@ -24,6 +25,7 @@ router.get("/meta/:resource", getResourceMeta);
 // Gera os dados para os gráficos do painel lateral
 router.get("/report/:resource", getResourceReport);
 
+router.get("/:resource/:id", authMiddleware, getOneResource);
 // Lista os registros de um recurso (ex: GET /api/resources/aprendizes)
 router.get("/:resource", authMiddleware, listResource);
 

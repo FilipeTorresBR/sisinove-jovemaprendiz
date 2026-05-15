@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import CompanyProfile from './pages/CompanyProfile';
 import ModulePage from './pages/ModulePage';
 import AppLayout from './layouts/AppLayout';
 
@@ -22,6 +23,7 @@ export default function App() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="empresa-profile" element={<CompanyProfile />} />
         <Route path="modulo/:resource" element={<ModulePage />} />
       </Route>
     </Routes>

@@ -23,7 +23,7 @@ export default function LoginPage() {
       // DETERMINA O DESTINO
       const destination = data.user.role.toLowerCase() === 'admin' 
         ? "/" 
-        : "/modulo/aprendizes";
+        : "/empresa-profile";
 
       // EM VEZ DE navigate(destination), usamos:
       window.location.href = destination;
@@ -32,7 +32,7 @@ export default function LoginPage() {
       setError(e.response?.data?.message || "Falha ao entrar.");
     }
   }
-  
+
   return (
     <div className="login-screen">
       <img

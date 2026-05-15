@@ -23,5 +23,14 @@ export async function login(req, res) {
     { expiresIn: '12h' }
   );
 
-  res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  res.json({ 
+    token, 
+    user: { 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role,
+      empresa_id: user.empresa_id
+    } 
+  });
 }
