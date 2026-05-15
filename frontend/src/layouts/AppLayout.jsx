@@ -1,27 +1,31 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { modules } from "../config/resources";
-const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
-const isAdmin = user.role?.toLowerCase() === "admin";
 
 export default function AppLayout() {
   const navigate = useNavigate();
 
-  // Pegamos o usuário do localStorage
+  // 1. Centraliza a leitura do usuário dentro do componente
   const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
-  const userRole = (user.role || "").toLowerCase(); // Garantimos que esteja em minúsculo para comparar
+  const userRole = (user.role || "").toLowerCase();
+  const isAdmin = userRole === "admin";
 
   const logout = () => {
-  localStorage.removeItem("sisq_token");
-  localStorage.removeItem("sisq_user");
-  
-  // Em vez de navigate("/login"), use:
-  window.location.href = "/login"; 
-};
+    localStorage.removeItem("sisq_token");
+    localStorage.removeItem("sisq_user");
+    window.location.href = "/login"; 
+  };
 
-  // Função para verificar se o usuário tem permissão para ver o item do menu
+  // 2. Redirecionamento ao clicar na marca (Brand)
+  const handleBrandClick = () => {
+    if (isAdmin) {
+      navigate("/");
+    } else {
+      // Se não for admin, leva para o primeiro módulo que ele tem acesso
+      navigate("/modulo/aprendizes"); 
+    }
+  };
+
   const canAccess = (item) => {
-    // Se o item não tiver 'roles' definido no config, permitimos por padrão
-    // Ou se a role do usuário estiver na lista de permitidas
     if (!item.roles) return true;
     return item.roles.includes(userRole);
   };
@@ -35,7 +39,8 @@ export default function AppLayout() {
             src="/src/assets/sisinove-logo-transparente.png"
             alt="Logo Sisinove"
           />
-          <div className="brand-box">
+          {/* Adicionado clique na marca para evitar ficar preso */}
+          <div className="brand-box" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
             <div className="brand-mark">S+</div>
             <div>
               <strong>SISAPRENDIZ</strong>
@@ -44,14 +49,15 @@ export default function AppLayout() {
           </div>
 
           <nav className="nav-menu">
+            {/* Dashboard só aparece para Admin */}
             {isAdmin && (
-            <NavLink to="/" end>
-              Dashboard
-            </NavLink>
+              <NavLink to="/" end>
+                Dashboard
+              </NavLink>
             )}
 
             {Object.entries(modules)
-              .filter(([_, item]) => canAccess(item)) // Filtra baseado na role
+              .filter(([_, item]) => canAccess(item))
               .map(([path, item]) => (
                 <NavLink key={path} to={`/modulo/${path}`}>
                   {item.label}
@@ -62,7 +68,9 @@ export default function AppLayout() {
 
         <div className="profile-box">
           <strong>{user.name || "Usuário"}</strong>
-          <span style={{ textTransform: 'capitalize' }}>{user.role || "perfil"}</span>
+          <span style={{ textTransform: 'capitalize' }}>
+            {user.role || "perfil"}
+          </span>
           <button onClick={logout}>Sair</button>
         </div>
       </aside>
