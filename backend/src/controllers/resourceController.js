@@ -36,21 +36,20 @@ export async function listResourcesMetadata(req, res) {
 export async function getResourceMeta(req, res) {
   const config = getResourceConfig(req.params.resource);
   if (!config)
-    return res
-      .status(404)
-      .json({
-        message: `Recurso '${req.params.resource}' não definido no config.`,
-      });
+    return res.status(404).json({
+      message: `Recurso "${req.params.resource}" não definido no config.`,
+    });
   res.json(config);
 }
 
 export async function listResource(req, res) {
   try {
     const { resource } = req.params;
-    const { role, empresa_id } = req.user; 
+    const { role, empresa_id } = req.user;
     const current = getResourceConfig(resource);
 
-    if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
+    if (!current)
+      return res.status(404).json({ message: "Recurso não encontrado." });
 
     let sql = "";
     let params = [];
@@ -58,32 +57,30 @@ export async function listResource(req, res) {
 
     // 1. Define a base da Query
     if (resource === "aprendizes") {
-      sql = `SELECT a.*, e.razao_social as empresa_nome FROM aprendizes a LEFT JOIN empresas e ON e.id = a.empresa_id`;
-      if (role !== 'admin') {
+      sql = `SELECT a.id as ID, a.nome as "Aluno", a.cpf as "CPF", a.ocupacao as "Ocupação", a.cbo as "CBO", a.dia_aula_teorica as "Dia de Aula", a.horario_aula_teorica as "Horário", TO_CHAR(a.data_inicio_contrato, 'DD/MM/YYYY') as "Inicio do Contrato", TO_CHAR(a.data_fim_contrato, 'DD/MM/YYYY') as "Fim do Contrato", e.razao_social as "Empresa", a.status as "Situação", a.attachments as "Anexos" FROM aprendizes a LEFT JOIN empresas e ON e.id = a.empresa_id`;
+
+      if (role !== "admin") {
         conditions.push(`a.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
-    }
-    else if (resource === "frequencias") {
-      sql = `SELECT f.*, a.nome as aprendiz_nome, e.razao_social as empresa_nome FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
-      if (role !== 'admin') {
+    } else if (resource === "frequencias") {
+      sql = `SELECT f.id as "ID", a.nome as "Aluno", e.razao_social as "Empresa", f.mes_referencia as "Mês de referência", f.aulas_previstas as "Aulas Previstas", f.presencas as "Presenças", f.faltas as "Faltas", f.faltas_justificadas as "Faltas Justificadas", f.percentual_frequencia as "Frequência", f.situacao as "Situação", f.attachments as "Anexos" FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
+      if (role !== "admin") {
         conditions.push(`f.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
-    }
-    else if (resource === "empresas") {
+    } else if (resource === "empresas") {
       sql = `SELECT * FROM empresas`;
-      if (role !== 'admin') {
+      if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
       }
-    }
-    else {
+    } else {
       // Para qualquer outra tabela genérica (incluindo currículos)
       sql = `SELECT * FROM ${current.table}`;
-      
-      // EXCEÇÃO: Se for 'curriculos', NÃO adiciona filtro de empresa_id para não-admins
-      if (role !== 'admin' && resource !== 'curriculos') {
+
+      // EXCEÇÃO: Se for "curriculos", NÃO adiciona filtro de empresa_id para não-admins
+      if (role !== "admin" && resource !== "curriculos") {
         conditions.push(`empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
@@ -111,7 +108,11 @@ export async function createResource(req, res) {
   const payload = buildPayload(req.body, current.formFields, req.file);
 
   // Garante que se uma empresa criar algo, o ID dela seja injetado (exceto em curriculos)
-  if (role !== 'admin' && req.params.resource !== 'curriculos' && (payload.empresa_id || req.params.resource === 'frequencias')) {
+  if (
+    role !== "admin" &&
+    req.params.resource !== "curriculos" &&
+    (payload.empresa_id || req.params.resource === "frequencias")
+  ) {
     payload.empresa_id = empresa_id;
   }
 
@@ -166,16 +167,17 @@ export async function deleteResource(req, res) {
 export async function getResourceReport(req, res) {
   try {
     const { resource } = req.params;
-    const { role, empresa_id } = req.user; 
+    const { role, empresa_id } = req.user;
     const current = getResourceConfig(resource);
 
-    if (!current) return res.status(404).json({ message: "Recurso não encontrado." });
+    if (!current)
+      return res.status(404).json({ message: "Recurso não encontrado." });
 
     let whereClause = "";
     let params = [];
 
     // EXCEÇÃO: Currículos mostram gráfico global para todos
-    if (role !== 'admin' && resource !== 'curriculos') {
+    if (role !== "admin" && resource !== "curriculos") {
       whereClause = `WHERE empresa_id = $1`;
       params.push(empresa_id);
     }
@@ -186,12 +188,12 @@ export async function getResourceReport(req, res) {
        ${whereClause}
        GROUP BY ${current.chart.groupBy} 
        ORDER BY total DESC`,
-      params
+      params,
     );
 
     const totalRows = await query(
       `SELECT COUNT(*)::int AS total FROM ${current.table} ${whereClause}`,
-      params
+      params,
     );
 
     res.json({
@@ -215,10 +217,14 @@ export async function getOneResource(req, res) {
     const idToken = parseInt(empresa_id);
 
     // Se for perfil de empresas, verificamos se o ID solicitado é o dele
-    if (role === 'empresas' && resource === 'empresas') {
+    if (role === "empresas" && resource === "empresas") {
       if (idUrl !== idToken) {
-        console.log(`Bloqueio: User idToken ${idToken} tentou acessar idUrl ${idUrl}`);
-        return res.status(403).json({ message: 'Você só pode visualizar os dados da sua própria empresa.' });
+        console.log(
+          `Bloqueio: User idToken ${idToken} tentou acessar idUrl ${idUrl}`,
+        );
+        return res.status(403).json({
+          message: "Você só pode visualizar os dados da sua própria empresa.",
+        });
       }
     }
 

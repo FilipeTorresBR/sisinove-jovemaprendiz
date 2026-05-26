@@ -54,9 +54,8 @@ function Field({ field, value, onChange, options }) {
       >
         <option value="">Selecione...</option>
         {lista.map((item) => (
-          <option key={item.id || item} value={item.id || item}>
-            {/* Tenta mostrar razao_social (empresa), nome (aprendiz) ou o próprio item */}
-            {item.razao_social || item.nome || item}
+          <option key={item.id || item.ID || item} value={item.id || item.ID || item}>
+            {item.razao_social || item.Empresa || item.nome || item.Aluno || (typeof item === 'object' ? item.id : item)}
           </option>
         ))}
       </select>
@@ -235,41 +234,41 @@ export default function ModulePage() {
       </header>
       <section className="module-top-grid" >
         {canEdit && (
-        <div className="panel">
-          <div className="panel-header">
-            <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>
-            {editingId && (
-              <button className="ghost-btn" onClick={resetForm}>
-                Cancelar edição
-              </button>
-            )}
-          </div>
-          <form className="form-grid" onSubmit={handleSubmit}>
-            {meta.formFields.map((field) => (
-              <label
-                key={field.name}
-                className={field.type === "textarea" ? "full-span" : ""}
-              >
-                <span>{field.label}</span>
-                <Field
-                  field={field}
-                  value={form[field.name]}
-                  onChange={handleChange}
-                  options={options} // <--- ADICIONE ESTA LINHA EXATAMENTE ASSIM
-                />
-              </label>
-            ))}
-            {message && <div className="info-box full-span">{message}</div>}
-            <div className="form-actions full-span">
-              <button type="submit" disabled={saving}>
-                {saving ? "Salvando..." : editingId ? "Atualizar" : "Salvar"}
-              </button>
-              <button type="button" className="ghost-btn" onClick={resetForm}>
-                Limpar
-              </button>
+          <div className="panel">
+            <div className="panel-header">
+              <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>
+              {editingId && (
+                <button className="ghost-btn" onClick={resetForm}>
+                  Cancelar edição
+                </button>
+              )}
             </div>
-          </form>
-        </div>
+            <form className="form-grid" onSubmit={handleSubmit}>
+              {meta.formFields.map((field) => (
+                <label
+                  key={field.name}
+                  className={field.type === "textarea" ? "full-span" : ""}
+                >
+                  <span>{field.label}</span>
+                  <Field
+                    field={field}
+                    value={form[field.name]}
+                    onChange={handleChange}
+                    options={options} // <--- ADICIONE ESTA LINHA EXATAMENTE ASSIM
+                  />
+                </label>
+              ))}
+              {message && <div className="info-box full-span">{message}</div>}
+              <div className="form-actions full-span">
+                <button type="submit" disabled={saving}>
+                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Salvar"}
+                </button>
+                <button type="button" className="ghost-btn" onClick={resetForm}>
+                  Limpar
+                </button>
+              </div>
+            </form>
+          </div>
         )}
         <div className="panel">
           <div className="panel-header">
