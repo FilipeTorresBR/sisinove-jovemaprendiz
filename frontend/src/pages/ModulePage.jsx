@@ -46,19 +46,39 @@ function Field({ field, value, onChange, options }) {
     // Aqui está a mágica: ele tenta pegar do estado dinâmico 'options'
     // Se não houver nada lá, ele usa as 'options' fixas do resources.js
     const lista = options?.[field.name] || field.options || [];
-
     return (
       <select
         value={value ?? ""}
         onChange={(e) => onChange(field.name, e.target.value)}
       >
         <option value="">Selecione...</option>
-        {lista.map((item) => (
-          <option key={item.id || item.ID || item} value={item.id || item.ID || item}>
-            {item.razao_social || item.Empresa || item.nome || item.Aluno || (typeof item === 'object' ? item.id : item)}
-          </option>
-        ))}
-      </select>
+        {lista.map((item) => {
+          // 1. Garante o ID correto (seja id minúsculo ou ID maiúsculo do seu SQL)
+          const idValue = item.id ?? item.ID ?? item;
+
+          // 2. Decide o texto baseado no nome do campo (field.name)
+          let textoExibido = "";
+
+          if (field.name?.includes("empresa")) {
+            // Se o campo for de empresa, prioriza os nomes de empresa
+            textoExibido = item.razao_social || item.Empresa || item.nome || item.Aluno;
+          } else {
+            // Para qualquer outro campo (como aprendiz), prioriza o Aluno
+            textoExibido = item.Aluno || item.nome || item.razao_social || item.Empresa;
+          }
+
+          // 3. Fallback de segurança se ainda for um objeto
+          if (typeof textoExibido === "object") {
+            textoExibido = idValue;
+          }
+
+          return (
+            <option key={idValue} value={idValue}>
+              {textoExibido || idValue}
+            </option>
+          );
+        })}
+      </select >
     );
   }
   // NOVO: Tratamento para o campo de arquivo
@@ -339,7 +359,7 @@ export default function ModulePage() {
                   row.name ||
                   row.code ||
                   row.protocol ||
-                  `Registro #${row.id}`}
+                  `Registro #${row.id || row.ID}`}
               </strong>
               <p>{Object.values(row).slice(1, 4).join(" • ")}</p>
             </div>
