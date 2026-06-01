@@ -99,6 +99,22 @@ export const resources = {
         type: "select",
         required: true,
         resource: "aprendizes",
+        onchange: (selectedOption, formHelpers) => {
+          if (selectedOption && selectedOption.razao_social) {
+            formHelpers.setValue("razao_social", selectedOption.razao_social);
+            formHelpers.setValue("empresa_id", selectedOption.empresa_id);
+          }else{
+            console.log("cu")
+          }
+        }
+      },
+      { 
+        name: "empresa_id", // Mudou aqui
+        label: "Empresa", 
+        type: "select",     // Mudou para select
+        required: true,
+        resource: "empresas", // Aponta para a tabela de empresas
+        disabled: true      // Mantém desativado para o usuário não mudar manualmente
       },
       {
         name: "mes_referencia",

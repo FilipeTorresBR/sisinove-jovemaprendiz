@@ -64,13 +64,13 @@ export async function listResource(req, res) {
         params.push(empresa_id);
       }
     } else if (resource === "frequencias") {
-      sql = `SELECT f.id as "ID", a.nome as "Aluno", e.razao_social as "Empresa", f.mes_referencia as "Mês de referência", f.aulas_previstas as "Aulas Previstas", f.presencas as "Presenças", f.faltas as "Faltas", f.faltas_justificadas as "Faltas Justificadas", f.percentual_frequencia as "Frequência", f.situacao as "Situação", f.attachments as "Anexos" FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
+      sql = `SELECT f.id as "ID", a.nome as "Aluno", e.razao_social as "Empresa", e.id as IDEmpresa, f.mes_referencia as "Mês de referência", f.aulas_previstas as "Aulas Previstas", f.presencas as "Presenças", f.faltas as "Faltas", f.faltas_justificadas as "Faltas Justificadas", f.percentual_frequencia as "Frequência", f.situacao as "Situação", f.attachments as "Anexos" FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
       if (role !== "admin") {
         conditions.push(`f.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
     } else if (resource === "empresas") {
-      sql = `SELECT * FROM empresas`;
+      sql = `SELECT e.id as ID, e.cnpj as CNPJ, e.responsavel_legal as Responsável Legal, e.email as E-Mail, e.data_inicio_parceria as Início da parceria, e.data_fim_parceria as Fim da parceria, e.status as Situação, e.attachments as Anexos FROM empresas as e`;
       if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);

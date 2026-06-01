@@ -93,13 +93,8 @@ function Field({ field, value, onChange, options }) {
 
   return (
     <input
-      type={
-        field.type === "number"
-          ? "number"
-          : field.type === "date"
-            ? "date"
-            : "text"
-      }
+      type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
+      disabled={field.disabled} // <-- Adicione isso aqui
       value={field.type !== "file" ? (value ?? "") : undefined}
       onChange={(e) => onChange(field.name, e.target.value)}
     />
@@ -176,8 +171,33 @@ export default function ModulePage() {
     );
   }, [rows, search]);
 
-  const handleChange = (name, value) =>
-    setForm((current) => ({ ...current, [name]: value }));
+  const handleChange = (name, value) => {
+    setForm((current) => {
+      const updatedForm = { ...current, [name]: value };
+
+      // Se o usuário selecionou um aprendiz
+      if (name === "aprendiz_id" && value) {
+        // Busca a lista de aprendizes que está guardada no estado options
+        const listaAprendizes = options["aprendiz_id"] || [];
+        
+        // Encontra o aprendiz selecionado (compara com .id ou .ID vindo do SQL)
+        const aprendizSelecionado = listaAprendizes.find(
+          (item) => String(item.id ?? item.ID) === String(value)
+        );
+
+        if (aprendizSelecionado) {
+          // Pega a razão social (verifica os aliases em português ou inglês)
+          const razaoSocial = aprendizSelecionado.Empresa || aprendizSelecionado.razao_social;
+          
+          if (razaoSocial) {
+            updatedForm["razao_social"] = razaoSocial;
+          }
+        }
+      }
+
+      return updatedForm;
+    });
+  };
 
   async function handleSubmit(event) {
     event.preventDefault();
