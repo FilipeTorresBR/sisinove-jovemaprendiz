@@ -70,7 +70,7 @@ export async function listResource(req, res) {
         params.push(empresa_id);
       }
     } else if (resource === "empresas") {
-      sql = `SELECT e.id as ID, e.cnpj as CNPJ, e.responsavel_legal as Responsável Legal, e.email as E-Mail, e.data_inicio_parceria as Início da parceria, e.data_fim_parceria as Fim da parceria, e.status as Situação, e.attachments as Anexos FROM empresas as e`;
+      sql = `SELECT e.id as "ID", e.razao_social as "Razão Social",\ e.cnpj as "CNPJ", e.responsavel_legal as "Responsável Legal", e.email as "E-Mail", TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY') as "Início da parceria", TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY') as "Fim da parceria", e.status as "Situação", e.attachments as "Anexos" FROM empresas as e`;
       if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
