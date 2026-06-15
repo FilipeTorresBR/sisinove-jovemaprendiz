@@ -89,3 +89,15 @@ CREATE TABLE IF NOT EXISTS users (
     criado_em TIMESTAMP DEFAULT NOW(),
     CONSTRAINT fk_empresa_desp FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS financeiro (
+    id SERIAL PRIMARY KEY,
+    empresa_id INTEGER NOT NULL,
+    descricao TEXT NOT NULL,
+    data_vencimento DATE NOT NULL,
+    boleto_attachments VARCHAR(255),       -- Armazena o link/caminho do arquivo do boleto
+    nota_fiscal_attachments VARCHAR(255),  -- Armazena o link/caminho da NF
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+);

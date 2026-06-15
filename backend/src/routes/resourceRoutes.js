@@ -35,12 +35,27 @@ router.post(
   "/:resource",
   authMiddleware,
   checkRole(["admin", "empresas"]),
-  upload.single("attachments"),
+  // Troque upload.single por upload.fields listando os campos possíveis
+  upload.fields([
+    { name: "attachments", maxCount: 1 },
+    { name: "boleto_attachments", maxCount: 1 },
+    { name: "nota_fiscal_attachments", maxCount: 1 }
+  ]),
   createResource,
 );
-// Atualiza um registro existente
-router.put("/:resource/:id", upload.single("attachments"), updateResource);
 
+// Lembre-se de fazer o mesmo na rota de PUT (edição), se houver:
+router.put(
+  "/:resource/:id",
+  authMiddleware,
+  checkRole(["admin", "empresas"]),
+  upload.fields([
+    { name: "attachments", maxCount: 1 },
+    { name: "boleto_attachments", maxCount: 1 },
+    { name: "nota_fiscal_attachments", maxCount: 1 }
+  ]),
+  updateResource, // ou o nome da sua função de atualizar
+);
 // Remove um registro
 router.delete(
   "/:resource/:id",

@@ -238,6 +238,34 @@ export const resources = {
     ],
     chart: { type: "bar", groupBy: "escolaridade", title: "Escolaridade" },
   },
+
+  financeiro: {
+    label: "Controle financeiro",
+    table: "financeiro",
+    roles: ["admin", "empresas"],
+    canCompanyEdit: false,
+    order: "criado_em DESC",
+    id: "id",
+    searchable: [],
+    formFields: [
+      {
+        name: "empresa_id",
+        label: "Empresa",
+        type: "select",
+        required: true,
+        resource: "empresas",
+      },
+      { name: "descricao", label: "Descrição", type: "text" },
+      {
+        name: "data_vencimento",
+        label: "Data de Vencimento",
+        type: "date",
+      },
+      { name: "boleto_attachments", label: "Boleto", type: "file" },
+      { name: "nota_fiscal_attachments", label: "Nota Fiscal", type: "file" },
+    ],
+    chart: { type: "bar", groupBy: "empresa_id", title: "Empresas" },
+  },
 };
 
 export function getResourceConfig(resource) {

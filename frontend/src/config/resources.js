@@ -4,4 +4,6 @@ export const modules = {
   frequencias: { label: "Frequência mensal", roles: ['admin', 'empresas'] },
   desempenhos: { label: "Desempenho teórico", roles: ['admin', 'empresas'] },
   curriculos: { label: "Banco de talentos", roles: ['admin', 'empresas'] },
+  financeiro: { label: "Controle financeiro", roles: ['admin', 'empresas'] },
+
 };

@@ -1,14 +1,18 @@
 import { query } from "../db/index.js";
 import { getResourceConfig, resources } from "../config/resources.js";
 
-// Função auxiliar para preparar os dados para o PostgreSQL
-function buildPayload(body, fields, file = null) {
+// 🚀 FUNÇÃO AUXILIAR CORRIGIDA: Agora suporta múltiplos campos de arquivo usando req.files
+function buildPayload(body, fields, files = null) {
   const payload = {};
   for (const field of fields) {
     if (field.type === "file") {
-      payload[field.name] = file
-        ? `/uploads/${file.filename}`
-        : body[field.name] || null;
+      // Se houver múltiplos arquivos (req.files) e o campo específico existir no upload
+      if (files && files[field.name] && files[field.name][0]) {
+        payload[field.name] = `/uploads/${files[field.name][0].filename}`;
+      } else {
+        // Se não foi enviado um arquivo novo, mantém o valor atual enviado pelo body (ou null)
+        payload[field.name] = body[field.name] || null;
+      }
       continue;
     }
 
@@ -55,31 +59,102 @@ export async function listResource(req, res) {
     let params = [];
     let conditions = [];
 
-    // 1. Define a base da Query
+    // 1. Define a base da Query trazendo os nomes amigáveis E os nomes originais em minúsculo
     if (resource === "aprendizes") {
-      sql = `SELECT a.id as ID, a.nome as "Aluno", a.cpf as "CPF", a.ocupacao as "Ocupação", a.cbo as "CBO", a.dia_aula_teorica as "Dia de Aula", a.horario_aula_teorica as "Horário", TO_CHAR(a.data_inicio_contrato, 'DD/MM/YYYY') as "Inicio do Contrato", TO_CHAR(a.data_fim_contrato, 'DD/MM/YYYY') as "Fim do Contrato", e.razao_social as "Empresa", a.status as "Situação", a.attachments as "Anexos" FROM aprendizes a LEFT JOIN empresas e ON e.id = a.empresa_id`;
+      sql = `SELECT 
+        a.id, 
+        a.id as "ID", 
+        a.nome, 
+        a.nome as "Aluno", 
+        a.cpf, 
+        a.cpf as "CPF", 
+        a.ocupacao, 
+        a.ocupacao as "Ocupação", 
+        a.cbo, 
+        a.cbo as "CBO", 
+        a.dia_aula_teorica, 
+        a.dia_aula_teorica as "Dia de Aula", 
+        a.horario_aula_teorica, 
+        a.horario_aula_teorica as "Horário", 
+        a.data_inicio_contrato, 
+        TO_CHAR(a.data_inicio_contrato, 'DD/MM/YYYY') as "Inicio do Contrato", 
+        a.data_fim_contrato, 
+        TO_CHAR(a.data_fim_contrato, 'DD/MM/YYYY') as "Fim do Contrato", 
+        a.empresa_id, 
+        e.razao_social as "Empresa", 
+        a.status, 
+        a.status as "Situação", 
+        a.attachments, 
+        a.attachments as "Anexos" 
+      FROM aprendizes a 
+      LEFT JOIN empresas e ON e.id = a.empresa_id`;
 
       if (role !== "admin") {
         conditions.push(`a.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
     } else if (resource === "frequencias") {
-      sql = `SELECT f.id as "ID", a.nome as "Aluno", e.razao_social as "Empresa", e.id as IDEmpresa, f.mes_referencia as "Mês de referência", f.aulas_previstas as "Aulas Previstas", f.presencas as "Presenças", f.faltas as "Faltas", f.faltas_justificadas as "Faltas Justificadas", f.percentual_frequencia as "Frequência", f.situacao as "Situação", f.attachments as "Anexos" FROM frequencias f JOIN aprendizes a ON a.id = f.aprendiz_id JOIN empresas e ON e.id = f.empresa_id`;
+      sql = `SELECT 
+        f.id, 
+        f.id as "ID", 
+        f.aprendiz_id, 
+        a.nome as "Aluno", 
+        f.empresa_id, 
+        e.razao_social as "Empresa", 
+        e.id as IDEmpresa, 
+        f.mes_referencia, 
+        f.mes_referencia as "Mês de referência", 
+        f.aulas_previstas, 
+        f.aulas_previstas as "Aulas Previstas", 
+        f.presencas, 
+        f.presencas as "Presenças", 
+        f.faltas, 
+        f.faltas as "Faltas", 
+        f.faltas_justificadas, 
+        f.faltas_justificadas as "Faltas Justificadas", 
+        f.percentual_frequencia, 
+        f.percentual_frequencia as "Frequência", 
+        f.situacao, 
+        f.situacao as "Situação", 
+        f.attachments, 
+        f.attachments as "Anexos" 
+      FROM frequencias f 
+      JOIN aprendizes a ON a.id = f.aprendiz_id 
+      JOIN empresas e ON e.id = f.empresa_id`;
+      
       if (role !== "admin") {
         conditions.push(`f.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
     } else if (resource === "empresas") {
-      sql = `SELECT e.id as "ID", e.razao_social as "Razão Social",\ e.cnpj as "CNPJ", e.responsavel_legal as "Responsável Legal", e.email as "E-Mail", TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY') as "Início da parceria", TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY') as "Fim da parceria", e.status as "Situação", e.attachments as "Anexos" FROM empresas as e`;
+      sql = `SELECT 
+        e.id, 
+        e.id as "ID", 
+        e.razao_social, 
+        e.razao_social as "Razão Social", 
+        e.cnpj, 
+        e.cnpj as "CNPJ", 
+        e.responsavel_legal, 
+        e.responsavel_legal as "Responsável Legal", 
+        e.email, 
+        e.email as "E-Mail", 
+        e.data_inicio_parceria, 
+        TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY') as "Início da parceria", 
+        e.data_fim_parceria, 
+        TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY') as "Fim da parceria", 
+        e.status, 
+        e.status as "Situação", 
+        e.attachments, 
+        e.attachments as "Anexos" 
+      FROM empresas as e`;
+      
       if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
       }
     } else {
-      // Para qualquer outra tabela genérica (incluindo currículos)
       sql = `SELECT * FROM ${current.table}`;
 
-      // EXCEÇÃO: Se for "curriculos", NÃO adiciona filtro de empresa_id para não-admins
       if (role !== "admin" && resource !== "curriculos") {
         conditions.push(`empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
@@ -102,62 +177,73 @@ export async function listResource(req, res) {
 }
 
 export async function createResource(req, res) {
-  const current = getResourceConfig(req.params.resource);
-  const { role, empresa_id } = req.user;
+  try {
+    const current = getResourceConfig(req.params.resource);
+    const { role, empresa_id } = req.user;
 
-  const payload = buildPayload(req.body, current.formFields, req.file);
+    // 💡 PASSAMOS REQ.FILES EM VEZ DE REQ.FILE
+    const payload = buildPayload(req.body, current.formFields, req.files);
 
-  // Garante que se uma empresa criar algo, o ID dela seja injetado (exceto em curriculos)
-  if (
-    role !== "admin" &&
-    req.params.resource !== "curriculos" &&
-    (payload.empresa_id || req.params.resource === "frequencias")
-  ) {
-    payload.empresa_id = empresa_id;
+    if (
+      role !== "admin" &&
+      req.params.resource !== "curriculos" &&
+      (payload.empresa_id || req.params.resource === "frequencias")
+    ) {
+      payload.empresa_id = empresa_id;
+    }
+
+    if (req.params.resource === "frequencias") {
+      const aulas = Number(payload.aulas_previstas || 0);
+      const presencas = Number(payload.presencas || 0);
+      payload.percentual_frequencia = aulas > 0 ? (presencas / aulas) * 100 : 0;
+      payload.situacao =
+        payload.percentual_frequencia < 75 ? "critico" : "regular";
+    }
+
+    const fields = Object.keys(payload);
+    const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
+
+    const result = await query(
+      `INSERT INTO ${current.table} (${fields.join(", ")}) VALUES (${placeholders}) RETURNING *`,
+      fields.map((field) => payload[field]),
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao criar registro." });
   }
-
-  if (req.params.resource === "frequencias") {
-    const aulas = Number(payload.aulas_previstas || 0);
-    const presencas = Number(payload.presencas || 0);
-    payload.percentual_frequencia = aulas > 0 ? (presencas / aulas) * 100 : 0;
-    payload.situacao =
-      payload.percentual_frequencia < 75 ? "critico" : "regular";
-  }
-
-  const fields = Object.keys(payload);
-  const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-
-  const result = await query(
-    `INSERT INTO ${current.table} (${fields.join(", ")}) VALUES (${placeholders}) RETURNING *`,
-    fields.map((field) => payload[field]),
-  );
-
-  res.status(201).json(result.rows[0]);
 }
 
 export async function updateResource(req, res) {
-  const current = getResourceConfig(req.params.resource);
-  if (!current)
-    return res.status(404).json({ message: "Recurso não encontrado." });
+  try {
+    const current = getResourceConfig(req.params.resource);
+    if (!current)
+      return res.status(404).json({ message: "Recurso não encontrado." });
 
-  const payload = buildPayload(req.body, current.formFields, req.file);
-  const fields = Object.keys(payload);
+    // 💡 PASSAMOS REQ.FILES EM VEZ DE REQ.FILE
+    const payload = buildPayload(req.body, current.formFields, req.files);
+    const fields = Object.keys(payload);
 
-  const sets = fields.map((field, index) => `${field} = $${index + 1}`);
-  const values = fields.map((field) => payload[field]);
-  values.push(req.params.id);
+    const sets = fields.map((field, index) => `${field} = $${index + 1}`);
+    const values = fields.map((field) => payload[field]);
+    values.push(req.params.id);
 
-  const result = await query(
-    `UPDATE ${current.table} SET ${sets.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`,
-    values,
-  );
+    const result = await query(
+      `UPDATE ${current.table} SET ${sets.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`,
+      values,
+    );
 
-  res.json(result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao atualizar registro." });
+  }
 }
 
 export async function deleteResource(req, res) {
   const current = getResourceConfig(req.params.resource);
-  const result = await query(
+  await query(
     `DELETE FROM ${current.table} WHERE id = $1 RETURNING id`,
     [req.params.id],
   );
@@ -176,7 +262,6 @@ export async function getResourceReport(req, res) {
     let whereClause = "";
     let params = [];
 
-    // EXCEÇÃO: Currículos mostram gráfico global para todos
     if (role !== "admin" && resource !== "curriculos") {
       whereClause = `WHERE empresa_id = $1`;
       params.push(empresa_id);
@@ -207,16 +292,15 @@ export async function getResourceReport(req, res) {
     res.status(500).json({ message: "Erro ao gerar relatório estatístico." });
   }
 }
+
 export async function getOneResource(req, res) {
   try {
     const { resource, id } = req.params;
     const { role, empresa_id } = req.user;
 
-    // Convertemos ambos para Number para garantir a comparação
     const idUrl = parseInt(id);
     const idToken = parseInt(empresa_id);
 
-    // Se for perfil de empresas, verificamos se o ID solicitado é o dele
     if (role === "empresas" && resource === "empresas") {
       if (idUrl !== idToken) {
         console.log(
