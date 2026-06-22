@@ -65,13 +65,13 @@ function Field({ field, value, onChange, options }) {
 
           // Caso 2: O item é um objeto vindo do banco (Ex: campo [empresa_id])
           const idValue = item.ID ?? item.id ?? item.Id;
-          
+
           // Mapeamento exato respeitando espaços, acentos e maiúsculas
-          const textoExibido = 
-            item["Razão Social"] || 
-            item.Aluno || 
-            item.nome || 
-            item.Empresa || 
+          const textoExibido =
+            item["Razão Social"] ||
+            item.Aluno ||
+            item.nome ||
+            item.Empresa ||
             item.razao_social;
 
           return (
@@ -135,11 +135,11 @@ export default function ModulePage() {
 
       // 1. Tratamento para anexos padrão (Ex: aprendizes, frequencias, empresas)
       const attachmentKey = Object.keys(newRow).find(k => k.toLowerCase() === 'attachments' || k === 'Anexos');
-      
+
       if (attachmentKey && newRow[attachmentKey] && typeof newRow[attachmentKey] === "string") {
-        newRow[`_raw_${attachmentKey}`] = newRow[attachmentKey]; 
+        newRow[`_raw_${attachmentKey}`] = newRow[attachmentKey];
         const fileUrl = `${baseUrl}${newRow[attachmentKey]}`;
-        
+
         newRow[attachmentKey] = (
           <a
             href={fileUrl}
@@ -156,7 +156,7 @@ export default function ModulePage() {
       // 2. Tratamento para o Boleto (Módulo Financeiro)
       if (newRow.boleto_attachments && typeof newRow.boleto_attachments === "string") {
         const boletoUrl = `${baseUrl}${newRow.boleto_attachments}`;
-        
+
         newRow.boleto_attachments = (
           <a
             href={boletoUrl}
@@ -173,7 +173,7 @@ export default function ModulePage() {
       // 3. Tratamento para a Nota Fiscal (Módulo Financeiro)
       if (newRow.nota_fiscal_attachments && typeof newRow.nota_fiscal_attachments === "string") {
         const nfUrl = `${baseUrl}${newRow.nota_fiscal_attachments}`;
-        
+
         newRow.nota_fiscal_attachments = (
           <a
             href={nfUrl}
@@ -191,7 +191,7 @@ export default function ModulePage() {
     });
 
     setMeta(metaRes.data);
-    setRows(processedRows); 
+    setRows(processedRows);
     setReport(reportRes.data);
     setForm(emptyForm(metaRes.data.formFields));
   }
@@ -215,7 +215,7 @@ export default function ModulePage() {
       if (name === "aprendiz_id" && value) {
         // Busca a lista de aprendizes que está guardada no estado options
         const listaAprendizes = options["aprendiz_id"] || [];
-        
+
         // Encontra o aprendiz selecionado (compara com .id ou .ID vindo do SQL)
         const aprendizSelecionado = listaAprendizes.find(
           (item) => String(item.id ?? item.ID) === String(value)
@@ -224,7 +224,7 @@ export default function ModulePage() {
         if (aprendizSelecionado) {
           // Pega a razão social (verifica os aliases em português ou inglês)
           const razaoSocial = aprendizSelecionado.Empresa || aprendizSelecionado.razao_social;
-          
+
           if (razaoSocial) {
             updatedForm["razao_social"] = razaoSocial;
           }
@@ -276,48 +276,9 @@ export default function ModulePage() {
   // 2. Substitua a função handleEdit por esta versão com mapeamento flexível
   function handleEdit(row) {
     const next = emptyForm(meta.formFields);
-    
+
     // Função interna para buscar valores na linha ignorando maiúsculas/minúsculas/acentos
-    const findValueInRow = (fieldName) => {
-      // Cria uma lista de possíveis nomes que essa coluna pode ter vindo do seu SQL
-      const possíveisChaves = [
-        fieldName,                                             // Ex: empresa_id, data_inicio_contrato
-        `_raw_${fieldName}`,                                   // Versão limpa de arquivos
-        fieldName.toLowerCase(),                               // tudo minúsculo
-        fieldName.toUpperCase(),                               // tudo maiúsculo
-      ];
 
-      // Mapeamentos específicos baseados nas aliases que você usou nas queries do backend
-      if (fieldName === 'nome') possíveisChaves.push('Aluno', 'aluno');
-      if (fieldName === 'razao_social') possíveisChaves.push('razao_social', 'Razão Social');
-      if (fieldName === 'cpf') possíveisChaves.push('CPF');
-      if (fieldName === 'ocupacao') possíveisChaves.push('Ocupação', 'ocupacao');
-      if (fieldName === 'cbo') possíveisChaves.push('CBO');
-      if (fieldName === 'dia_aula_teorica') possíveisChaves.push('Dia de Aula');
-      if (fieldName === 'horario_aula_teorica') possíveisChaves.push('Horário');
-      if (fieldName === 'data_inicio_contrato') possíveisChaves.push('Inicio do Contrato', 'Início do contrato');
-      if (fieldName === 'data_fim_contrato') possíveisChaves.push('Fim do Contrato', 'Fim do contrato');
-      if (fieldName === 'status') possíveisChaves.push('Situação', 'situacao');
-      if (fieldName === 'attachments') possíveisChaves.push('Anexos');
-      if (fieldName === 'cnpj') possíveisChaves.push('CNPJ');
-      if (fieldName === 'responsavel_legal') possíveisChaves.push('Responsável Legal');
-      if (fieldName === 'email') possíveisChaves.push('E-Mail', 'email');
-      if (fieldName === 'data_inicio_parceria') possíveisChaves.push('Início da parceria');
-      if (fieldName === 'data_fim_parceria') possíveisChaves.push('Fim da parceria');
-      if (fieldName === 'mes_referencia') possíveisChaves.push('Mês de referência');
-      if (fieldName === 'aulas_previstas') possíveisChaves.push('Aulas Previstas');
-      if (fieldName === 'presencas') possíveisChaves.push('Presenças');
-      if (fieldName === 'faltas') possíveisChaves.push('Faltas');
-      if (fieldName === 'faltas_justificadas') possíveisChaves.push('Faltas Justificadas');
-
-      // Percorre as possibilidades e retorna a primeira que encontrar valor na row
-      for (const chave of possíveisChaves) {
-        if (row[chave] !== undefined && row[chave] !== null) {
-          return row[chave];
-        }
-      }
-      return "";
-    };
 
     // Preenche o formulário comparando o field.name com os dados dinâmicos da linha
     for (const field of meta.formFields) {
@@ -325,11 +286,11 @@ export default function ModulePage() {
     }
 
     setForm(next);
-    
+
     // Descobre o ID correto (seja id minúsculo ou ID maiúsculo vindo do SQL)
     const recordId = row.id ?? row.ID ?? row["ID"];
     setEditingId(recordId);
-    
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -396,45 +357,7 @@ export default function ModulePage() {
             </form>
           </div>
         )}
-        <div className="panel">
-          <div className="panel-header">
-            <h3>{report.chart.title}</h3>
-          </div>
-          <div className="chart-area">
-            <ResponsiveContainer width="100%" height={280}>
-              {report.chart.type === "pie" ? (
-                <PieChart>
-                  <Pie
-                    data={report.chart.data}
-                    dataKey="total"
-                    nameKey="label"
-                    outerRadius={90}
-                  >
-                    {report.chart.data.map((entry, index) => (
-                      <Cell
-                        key={entry.label}
-                        fill={colors[index % colors.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              ) : (
-                <BarChart data={report.chart.data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="label" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="total" fill="#0b5ed7" />
-                </BarChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-          <div className="report-summary">
-            <strong>{report.total}</strong>
-            <span>registro(s) no módulo</span>
-          </div>
-        </div>
+
       </section>
 
       <div className="toolbar panel">
@@ -447,14 +370,9 @@ export default function ModulePage() {
         <div className="toolbar-badge">{filtered.length} registro(s)</div>
       </div>
 
-      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
-        <div className="table-actions">
-          <button className="ghost-btn" onClick={loadAll}>
-            Atualizar dados
-          </button>
-        </div>
-        <DataTable rows={filtered} />
+      <div className="table-actions">
       </div>
+      <DataTable rows={filtered} />
 
       <div className="inline-actions-list">
         {filtered.slice(0, 10).map((row) => (

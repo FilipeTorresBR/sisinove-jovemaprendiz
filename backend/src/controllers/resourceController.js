@@ -63,29 +63,18 @@ export async function listResource(req, res) {
     if (resource === "aprendizes") {
       sql = `SELECT 
         a.id, 
-        a.id as "ID", 
-        a.nome, 
-        a.nome as "Aluno", 
+        a.nome,
+        e.razao_social, 
         a.cpf, 
-        a.cpf as "CPF", 
         a.ocupacao, 
-        a.ocupacao as "Ocupação", 
         a.cbo, 
-        a.cbo as "CBO", 
         a.dia_aula_teorica, 
-        a.dia_aula_teorica as "Dia de Aula", 
         a.horario_aula_teorica, 
-        a.horario_aula_teorica as "Horário", 
-        a.data_inicio_contrato, 
-        TO_CHAR(a.data_inicio_contrato, 'DD/MM/YYYY') as "Inicio do Contrato", 
-        a.data_fim_contrato, 
-        TO_CHAR(a.data_fim_contrato, 'DD/MM/YYYY') as "Fim do Contrato", 
+        TO_CHAR(a.data_inicio_contrato, 'DD/MM/YYYY'), 
+        TO_CHAR(a.data_fim_contrato, 'DD/MM/YYYY'), 
         a.empresa_id, 
-        e.razao_social as "Empresa", 
         a.status, 
-        a.status as "Situação", 
-        a.attachments, 
-        a.attachments as "Anexos" 
+        a.attachments
       FROM aprendizes a 
       LEFT JOIN empresas e ON e.id = a.empresa_id`;
 
@@ -96,32 +85,22 @@ export async function listResource(req, res) {
     } else if (resource === "frequencias") {
       sql = `SELECT 
         f.id, 
-        f.id as "ID", 
-        f.aprendiz_id, 
-        a.nome as "Aluno", 
-        f.empresa_id, 
-        e.razao_social as "Empresa", 
-        e.id as IDEmpresa, 
+        a.nome,
+        e.razao_social,
         f.mes_referencia, 
-        f.mes_referencia as "Mês de referência", 
         f.aulas_previstas, 
-        f.aulas_previstas as "Aulas Previstas", 
         f.presencas, 
-        f.presencas as "Presenças", 
         f.faltas, 
-        f.faltas as "Faltas", 
         f.faltas_justificadas, 
-        f.faltas_justificadas as "Faltas Justificadas", 
         f.percentual_frequencia, 
-        f.percentual_frequencia as "Frequência", 
         f.situacao, 
-        f.situacao as "Situação", 
-        f.attachments, 
-        f.attachments as "Anexos" 
+        f.attachments,
+        f.aprendiz_id,
+        f.empresa_id
       FROM frequencias f 
       JOIN aprendizes a ON a.id = f.aprendiz_id 
       JOIN empresas e ON e.id = f.empresa_id`;
-      
+
       if (role !== "admin") {
         conditions.push(`f.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
@@ -129,25 +108,16 @@ export async function listResource(req, res) {
     } else if (resource === "empresas") {
       sql = `SELECT 
         e.id, 
-        e.id as "ID", 
         e.razao_social, 
-        e.razao_social as "Razão Social", 
         e.cnpj, 
-        e.cnpj as "CNPJ", 
         e.responsavel_legal, 
-        e.responsavel_legal as "Responsável Legal", 
         e.email, 
-        e.email as "E-Mail", 
-        e.data_inicio_parceria, 
-        TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY') as "Início da parceria", 
-        e.data_fim_parceria, 
-        TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY') as "Fim da parceria", 
+        TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY'), 
+        TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY'), 
         e.status, 
-        e.status as "Situação", 
-        e.attachments, 
-        e.attachments as "Anexos" 
+        e.attachments
       FROM empresas as e`;
-      
+
       if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
@@ -243,10 +213,9 @@ export async function updateResource(req, res) {
 
 export async function deleteResource(req, res) {
   const current = getResourceConfig(req.params.resource);
-  await query(
-    `DELETE FROM ${current.table} WHERE id = $1 RETURNING id`,
-    [req.params.id],
-  );
+  await query(`DELETE FROM ${current.table} WHERE id = $1 RETURNING id`, [
+    req.params.id,
+  ]);
   res.json({ success: true });
 }
 

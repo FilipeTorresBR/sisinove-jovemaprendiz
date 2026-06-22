@@ -12,7 +12,7 @@ export default function AppLayout() {
   const logout = () => {
     localStorage.removeItem("sisq_token");
     localStorage.removeItem("sisq_user");
-    window.location.href = "/login"; 
+    window.location.href = "/login";
   };
 
   // 2. Redirecionamento ao clicar na marca (Brand)
@@ -21,7 +21,7 @@ export default function AppLayout() {
       navigate("/");
     } else {
       // Se não for admin, leva para o primeiro módulo que ele tem acesso
-      navigate("/empresa-profile"); 
+      navigate("/empresa-profile");
     }
   };
 
@@ -61,6 +61,9 @@ export default function AppLayout() {
                 Informações do Vínculo
               </NavLink>
             )}
+            <NavLink to="/relatorios-frequencia">
+              Relatórios de Frequência
+            </NavLink>
 
             {Object.entries(modules)
               .filter(([_, item]) => canAccess(item))
