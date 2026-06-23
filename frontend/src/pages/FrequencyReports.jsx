@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export default function FrequencyReports() {
     const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
@@ -56,52 +56,103 @@ export default function FrequencyReports() {
 
             // 3. INICIALIZAÇÃO DO jspdf (Layout Retrato, Unidade pt, Papel A4)
             const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const imgWidth = 120;
+            const imgHeight = 35;
+            const imgX = (pageWidth / 2) - (imgWidth / 2);
+            doc.addImage(
+                "/src/assets/sisinove-logo-transparente-letras-azuis.png",
+                "PNG",
+                imgX,
+                40,
+                imgWidth,
+                imgHeight
+            );
 
-            // Cabeçalho Corporativo do Documento
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
-            doc.text("SISAPRENDIZ - GESTÃO DE JOVENS APRENDIZES", 40, 50);
+            doc.setFontSize(12);
+            doc.setTextColor(60, 60, 60); // Tom cinza escuro corporativo
+            const text1 = "SISTEMA DE ENSINO INOVE INTERATIVA";
+            doc.text(text1, pageWidth / 2, 100, { align: "center" });
 
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "normal");
-            doc.text("Relatório Consolidado de Frequência Mensal", 40, 75);
+            // Linha 2: PROGRAMA DE APRENDIZAGEM PROFISSIONAL
+            doc.setFontSize(12);
+            const text2 = "PROGRAMA DE APRENDIZAGEM PROFISSIONAL";
+            doc.text(text2, pageWidth / 2, 118, { align: "center" });
 
-            // Linha divisória estética
-            doc.setDrawColor(200, 200, 200);
-            doc.line(40, 90, 555, 90);
 
-            // Metadados dos filtros impressos no PDF
-            doc.setFontSize(10);
+            doc.setFillColor(13, 110, 253); // Azul padrão do seu sistema
+            doc.rect(40, 135, pageWidth - 80, 25, "F");
+
+            // Texto dentro da faixa azul (Branco e centralizado)
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.setTextColor(255, 255, 255); // Texto Branco
+            const textTitulo = "RELATÓRIO DE FREQUÊNCIA MENSAL DO APRENDIZ";
+            doc.text(textTitulo, pageWidth / 2, 151, { align: "center" });
+
+            // 5. METADADOS E HISTÓRICO (Texto cinza claro abaixo da faixa)
+            doc.setFontSize(9);
             doc.setFont("helvetica", "italic");
+            doc.setTextColor(100, 100, 100);
             const textoPeriodo = filters.mes_referencia ? `Período: ${filters.mes_referencia}` : "Período: Histórico Completo";
-            doc.text(textoPeriodo, 40, 110);
-            doc.text(`Emitido em: ${new Date().toLocaleDateString("pt-BR")}`, 40, 125);
-
+            doc.text(textoPeriodo, 40, 180);
+            doc.text(`Emitido em: ${new Date().toLocaleDateString("pt-BR")}`, pageWidth - 140, 180);
             // 4. PREPARAÇÃO DA TABELA (jsPDF-AutoTable)
             const tableHeaders = [
                 ["Empresa", "Aprendiz", "Mês Ref.", "Aulas Prev.", "Presenças", "Faltas", "% Freq.", "Situação"]
             ];
 
-            const tableRows = data.map(item => [
-                item.empresa_nome || `Cód. ${item.empresa_id}`,
-                item.aprendiz_nome || `Cód. ${item.aprendiz_id}`,
-                item.mes_referencia,
-                item.aulas_previstas || 0,
-                item.presencas || 0,
-                item.faltas || 0,
-                item.percentual_frequencia ? `${Number(item.percentual_frequencia).toFixed(1)}%` : "0.0%",
-                {
-                    content: (item.situacao || "REGULAR").toUpperCase(),
-                    styles: {
-                        textColor: item.situacao === "critico" ? [200, 0, 0] : [0, 120, 0],
-                        fontStyle: "bold"
-                    }
+            const tableRows = data.map(item => {
+                // 1. Convertemos os valores para números com segurança
+                const previstas = Number(item.aulas_previstas || 0);
+                const presencas = Number(item.presencas || 0);
+                const faltas = Number(item.faltas || 0);
+                const justificadas = Number(item.faltas_justificadas || 0);
+
+                // 2. Cálculo Real da Frequência:
+                // Se houver aulas previstas, a frequência é calculada baseada nas presenças e faltas justificadas
+                let percentual = 100;
+                if (previstas > 0) {
+                    // Presenças + Justificadas sobre o total de aulas previstas
+                    percentual = ((presencas + justificadas) / previstas) * 100;
+                    // Garante que o percentual não ultrapasse 100% ou fique negativo
+                    percentual = Math.min(Math.max(percentual, 0), 100);
+                } else {
+                    percentual = 0;
                 }
-            ]);
+
+                // 3. Regra de Negócio para a Situação (Exemplo: menor que 75% é crítico)
+                let situacaoCalculada = "REGULAR";
+                if (percentual < 75) {
+                    situacaoCalculada = "CRÍTICO";
+                } else if (percentual < 85) {
+                    situacaoCalculada = "ATENÇÃO";
+                }
+
+                console.log(previstas, presencas, faltas, justificadas, situacaoCalculada, percentual)
+                // 4. Retorna a linha montada com os dados computados
+                return [
+                    item.razao_social || `Cód. ${item.empresa_id}`,
+                    item.nome || `Cód. ${item.aprendiz_id}`,
+                    item.mes_referencia,
+                    previstas,
+                    presencas,
+                    faltas,
+                    `${percentual.toFixed(1)}%`, // Exibe calculado ex: "0.0%" se tiver 2 previstas e 2 faltas
+                    {
+                        content: situacaoCalculada,
+                        styles: {
+                            textColor: situacaoCalculada === "CRÍTICO" ? [200, 0, 0] : (situacaoCalculada === "ATENÇÃO" ? [215, 150, 0] : [0, 120, 0]),
+                            fontStyle: "bold"
+                        }
+                    }
+                ];
+            });
 
             // Renderiza a tabela de forma automatizada cuidando das quebras de página
-            doc.autoTable({
-                startY: 140,
+            autoTable(doc, {
+                startY: 200,
                 head: tableHeaders,
                 body: tableRows,
                 theme: "striped",
@@ -112,7 +163,6 @@ export default function FrequencyReports() {
                     1: { cellWidth: 110 }, // Aprendiz
                 },
                 didDrawPage: (dataPage) => {
-                    // Rodapé simples contendo paginação automatizada
                     doc.setFontSize(8);
                     doc.setFont("helvetica", "normal");
                     doc.text(
@@ -138,8 +188,7 @@ export default function FrequencyReports() {
     return (
         <div className="panel report-panel">
             <header className="page-header">
-                <h1>Relatórios de Frequência (jsPDF)</h1>
-                <p>Gere os arquivos sob demanda diretamente no seu navegador utilizando os parâmetros abaixo.</p>
+                <h1>Relatórios de Frequência </h1>
             </header>
 
             <div className="filter-card" style={{ background: 'white', padding: '2rem', borderRadius: '8px', marginTop: '1.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
@@ -197,7 +246,7 @@ export default function FrequencyReports() {
                         disabled={generating}
                         style={{ background: '#0d6efd', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}
                     >
-                        {generating ? "Processando..." : "Gerar PDF Agora"}
+                        {generating ? "Processando..." : "Gerar Relatório"}
                     </button>
                 </div>
             </div>

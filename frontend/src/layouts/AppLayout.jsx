@@ -1,10 +1,12 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { modules } from "../config/resources";
 
 export default function AppLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false); // Controle do menu mobile
 
-  // 1. Centraliza a leitura do usuário dentro do componente
   const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
   const userRole = (user.role || "").toLowerCase();
   const isAdmin = userRole === "admin";
@@ -15,13 +17,12 @@ export default function AppLayout() {
     window.location.href = "/login";
   };
 
-  // 2. Redirecionamento ao clicar na marca (Brand)
   const handleBrandClick = () => {
+    setMenuOpen(false);
     if (isAdmin) {
       navigate("/");
     } else {
-      // Se não for admin, leva para o primeiro módulo que ele tem acesso
-      navigate("/empresa-profile");
+      navigate("/modulo/aprendizes");
     }
   };
 
@@ -30,45 +31,70 @@ export default function AppLayout() {
     return item.roles.includes(userRole);
   };
 
+  // Fecha o menu ao clicar em um link no mobile
+  const handleNavLinkClick = () => {
+    setMenuOpen(false);
+  };
+
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div>
+      {/* BARRA SUPERIOR MOBILE (Só aparece em telas pequenas) */}
+      <header className="mobile-navbar">
+        <div className="mobile-logo" onClick={handleBrandClick}>
+          {/* Substituído o texto antigo pela logo oficial que você indicou */}
           <img
-            style={{ width: 200, marginBottom: 5 }}
+            style={{ height: 35, width: "auto", objectFit: "contain" }}
             src="/src/assets/sisinove-logo-transparente.png"
             alt="Logo Sisinove"
           />
-          {/* Adicionado clique na marca para evitar ficar preso */}
-          <div className="brand-box" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
-            <div className="brand-mark">S+</div>
-            <div>
-              <strong>SISAPRENDIZ</strong>
-              <p>Gestão de Jovens Aprendizes</p>
+        </div>
+
+        <button
+          className={`hamburger ${menuOpen ? "open" : ""}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </header>
+
+      {/* SIDEBAR (Vira o menu drop-down no mobile quando menuOpen é true) */}
+      <aside className={`sidebar ${menuOpen ? "mobile-open" : ""}`}>
+        <div className="sidebar-top-wrapper">
+          <div className="desktop-logo-box">
+            <img
+              style={{ width: 200, marginBottom: 5 }}
+              src="/src/assets/sisinove-logo-transparente.png"
+              alt="Logo Sisinove"
+            />
+            <div className="brand-box" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
+              <div className="brand-mark">S+</div>
+              <div>
+                <strong>SISAPRENDIZ</strong>
+                <p>Gestão de Jovens Aprendizes</p>
+              </div>
             </div>
           </div>
 
           <nav className="nav-menu">
-            {/* Dashboard só aparece para Admin */}
             {isAdmin && (
-              <NavLink to="/" end>
+              <NavLink to="/" end onClick={handleNavLinkClick}>
                 Dashboard
               </NavLink>
             )}
 
             {!isAdmin && user.role === 'empresas' && (
-              <NavLink to="/empresa-profile">
-                Informações do Vínculo
+              <NavLink to="/minha-empresa" onClick={handleNavLinkClick}>
+                Minha Empresa
               </NavLink>
             )}
-            <NavLink to="/relatorios-frequencia">
-              Relatórios de Frequência
-            </NavLink>
 
             {Object.entries(modules)
               .filter(([_, item]) => canAccess(item))
               .map(([path, item]) => (
-                <NavLink key={path} to={`/modulo/${path}`}>
+                <NavLink key={path} to={`/modulo/${path}`} onClick={handleNavLinkClick}>
                   {item.label}
                 </NavLink>
               ))}
@@ -76,13 +102,18 @@ export default function AppLayout() {
         </div>
 
         <div className="profile-box">
-          <strong>{user.name || "Usuário"}</strong>
-          <span style={{ textTransform: 'capitalize' }}>
-            {user.role || "perfil"}
-          </span>
-          <button onClick={logout}>Sair</button>
+          <div>
+            <strong>{user.name || "Usuário"}</strong>
+            <span style={{ textTransform: 'capitalize', display: 'block', fontSize: '0.8rem', color: '#aaa' }}>
+              {user.role || "perfil"}
+            </span>
+          </div>
+          <button onClick={logout} className="logout-btn">Sair</button>
         </div>
       </aside>
+
+      {/* Overlay de fundo para fechar o menu ao clicar fora no mobile */}
+      {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)}></div>}
 
       <main className="main-content">
         <Outlet />

@@ -137,7 +137,7 @@ export default function ModulePage() {
       const attachmentKey = Object.keys(newRow).find(k => k.toLowerCase() === 'attachments' || k === 'Anexos');
 
       if (attachmentKey && newRow[attachmentKey] && typeof newRow[attachmentKey] === "string") {
-        newRow[`_raw_${attachmentKey}`] = newRow[attachmentKey];
+        //newRow[`_raw_${attachmentKey}`] = newRow[attachmentKey];
         const fileUrl = `${baseUrl}${newRow[attachmentKey]}`;
 
         newRow[attachmentKey] = (
@@ -278,7 +278,46 @@ export default function ModulePage() {
     const next = emptyForm(meta.formFields);
 
     // Função interna para buscar valores na linha ignorando maiúsculas/minúsculas/acentos
+    const findValueInRow = (fieldName) => {
+      // Cria uma lista de possíveis nomes que essa coluna pode ter vindo do seu SQL
+      const possíveisChaves = [
+        fieldName,                                             // Ex: empresa_id, data_inicio_contrato
+        `_raw_${fieldName}`,                                   // Versão limpa de arquivos
+        fieldName.toLowerCase(),                               // tudo minúsculo
+        fieldName.toUpperCase(),                               // tudo maiúsculo
+      ];
 
+      // Mapeamentos específicos baseados nas aliases que você usou nas queries do backend
+      if (fieldName === 'nome') possíveisChaves.push('Aluno', 'aluno');
+      if (fieldName === 'razao_social') possíveisChaves.push('razao_social', 'Razão Social');
+      if (fieldName === 'cpf') possíveisChaves.push('CPF');
+      if (fieldName === 'ocupacao') possíveisChaves.push('Ocupação', 'ocupacao');
+      if (fieldName === 'cbo') possíveisChaves.push('CBO');
+      if (fieldName === 'dia_aula_teorica') possíveisChaves.push('Dia de Aula');
+      if (fieldName === 'horario_aula_teorica') possíveisChaves.push('Horário');
+      if (fieldName === 'data_inicio_contrato') possíveisChaves.push('Inicio do Contrato', 'Início do contrato');
+      if (fieldName === 'data_fim_contrato') possíveisChaves.push('Fim do Contrato', 'Fim do contrato');
+      if (fieldName === 'status') possíveisChaves.push('Situação', 'situacao');
+      if (fieldName === 'attachments') possíveisChaves.push('Anexos');
+      if (fieldName === 'cnpj') possíveisChaves.push('CNPJ');
+      if (fieldName === 'responsavel_legal') possíveisChaves.push('Responsável Legal');
+      if (fieldName === 'email') possíveisChaves.push('E-Mail', 'email');
+      if (fieldName === 'data_inicio_parceria') possíveisChaves.push('Início da parceria');
+      if (fieldName === 'data_fim_parceria') possíveisChaves.push('Fim da parceria');
+      if (fieldName === 'mes_referencia') possíveisChaves.push('Mês de referência');
+      if (fieldName === 'aulas_previstas') possíveisChaves.push('Aulas Previstas');
+      if (fieldName === 'presencas') possíveisChaves.push('Presenças');
+      if (fieldName === 'faltas') possíveisChaves.push('Faltas');
+      if (fieldName === 'faltas_justificadas') possíveisChaves.push('Faltas Justificadas');
+
+      // Percorre as possibilidades e retorna a primeira que encontrar valor na row
+      for (const chave of possíveisChaves) {
+        if (row[chave] !== undefined && row[chave] !== null) {
+          return row[chave];
+        }
+      }
+      return "";
+    };
 
     // Preenche o formulário comparando o field.name com os dados dinâmicos da linha
     for (const field of meta.formFields) {
@@ -370,9 +409,16 @@ export default function ModulePage() {
         <div className="toolbar-badge">{filtered.length} registro(s)</div>
       </div>
 
-      <div className="table-actions">
+      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="table-actions">
+          {resource === "frequencias" && (
+            <a className="ghost-btn" href="/relatorios-frequencia">
+              Gerar Relatório de Frequência
+            </a>
+          )}
+        </div>
+        <DataTable rows={filtered} />
       </div>
-      <DataTable rows={filtered} />
 
       <div className="inline-actions-list">
         {filtered.slice(0, 10).map((row) => (
