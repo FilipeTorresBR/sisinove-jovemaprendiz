@@ -380,7 +380,7 @@ export default function ModulePage() {
                     field={field}
                     value={form[field.name]}
                     onChange={handleChange}
-                    options={options} // <--- ADICIONE ESTA LINHA EXATAMENTE ASSIM
+                    options={options}
                   />
                 </label>
               ))}

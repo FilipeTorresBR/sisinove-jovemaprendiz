@@ -6,34 +6,32 @@ export default function CompanyProfile() {
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
 
-useEffect(() => {
-  async function loadCompany() {
-    console.log("Tentando carregar empresa com ID:", user.empresa_id); // Veja se aparece no F12
-    if (!user.empresa_id) {
-      console.error("ID da empresa não encontrado no localStorage");
-      setLoading(false);
-      return;
-    }
+  useEffect(() => {
+    async function loadCompany() {
+      if (!user.empresa_id) {
+        console.error("ID da empresa não encontrado no localStorage");
+        setLoading(false);
+        return;
+      }
 
-    try {
-      // Verifique se a URL está correta: /resources/empresas/ID
-      const response = await api.get(`/resources/empresas/${user.empresa_id}`);
-      console.log("Dados recebidos:", response.data);
-      setCompany(response.data);
-    } catch (error) {
-      console.error("Erro na API:", error.response?.data || error.message);
-    } finally {
-      setLoading(false);
+      try {
+        // Verifique se a URL está correta: /resources/empresas/ID
+        const response = await api.get(`/resources/empresas/${user.empresa_id}`);
+        setCompany(response.data);
+      } catch (error) {
+        console.error("Erro na API:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
-  loadCompany();
-}, []);
+    loadCompany();
+  }, []);
 
   if (loading) return <div className="panel">Carregando informações...</div>;
   if (!company) return <div className="panel">Empresa não encontrada. user.empresa_id</div>;
-  const baseUrl = api.defaults.baseURL.replace("/api", "");  
+  const baseUrl = api.defaults.baseURL.replace("/api", "");
   const fileUrl = `${baseUrl}${company.attachments}`;
-    
+
   return (
     <div className="profile-container">
       <header className="page-header">
@@ -72,24 +70,24 @@ useEffect(() => {
         </div>
 
         {company.attachments && (
-        <div className="attachments-section" style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px dashed #ddd' }}>
+          <div className="attachments-section" style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px dashed #ddd' }}>
             <h4 style={{ marginBottom: '1rem', color: '#666' }}>Documentação Contratual</h4>
-            
-            <a 
-            href={`${fileUrl}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            download
-            className="download-btn"
-            > Contrato de Parceria 
-            
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+            <a
+              href={`${fileUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              className="download-btn"
+            > Contrato de Parceria
+
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg> 
+              </svg>
             </a>
-        </div>
+          </div>
         )}
       </div>
 

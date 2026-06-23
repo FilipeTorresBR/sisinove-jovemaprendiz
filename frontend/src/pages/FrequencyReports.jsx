@@ -61,7 +61,7 @@ export default function FrequencyReports() {
             const imgHeight = 35;
             const imgX = (pageWidth / 2) - (imgWidth / 2);
             doc.addImage(
-                "/src/assets/sisinove-logo-transparente-letras-azuis.png",
+                "/sisinove-logo-transparente-letras-azuis.png",
                 "PNG",
                 imgX,
                 40,
@@ -130,7 +130,6 @@ export default function FrequencyReports() {
                     situacaoCalculada = "ATENÇÃO";
                 }
 
-                console.log(previstas, presencas, faltas, justificadas, situacaoCalculada, percentual)
                 // 4. Retorna a linha montada com os dados computados
                 return [
                     item.razao_social || `Cód. ${item.empresa_id}`,

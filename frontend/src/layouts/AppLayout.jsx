@@ -86,8 +86,8 @@ export default function AppLayout() {
             )}
 
             {!isAdmin && user.role === 'empresas' && (
-              <NavLink to="/minha-empresa" onClick={handleNavLinkClick}>
-                Minha Empresa
+              <NavLink to="/empresa-profile">
+                Informações do Vínculo
               </NavLink>
             )}
 
