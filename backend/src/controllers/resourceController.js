@@ -125,16 +125,16 @@ export async function listResource(req, res) {
     } else if (resource === "desempenhos") {
       sql = `SELECT 
         d.id,
-        d.aprendiz_id,
-        d.empresa_id,
-        e.razao_social as empresa_nome,
+        a.nome as aprendiz_id,
+        e.razao_social as empresa_id,
         d.participacao,
         d.pontualidade,
         d.comprometimento,
         d.observacoes_instrutor,
         d.criado_em
       FROM desempenhos as d
-      LEFT JOIN empresas as e ON e.id = d.empresa_id`;
+      LEFT JOIN empresas as e ON e.id = d.empresa_id
+      LEFT JOIN aprendizes as a ON a.id = d.aprendiz_id`;
 
       if (role !== "admin") {
         // CORREÇÃO: Especificar que o filtro é na coluna da tabela 'd' (desempenhos)
