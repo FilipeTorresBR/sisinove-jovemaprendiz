@@ -131,16 +131,16 @@ export async function listResource(req, res) {
         d.participacao,
         d.pontualidade,
         d.comprometimento,
-        d.observacoes_instrutor
+        d.observacoes_instrutor,
+        d.criado_em
       FROM desempenhos as d
       LEFT JOIN empresas as e ON e.id = d.empresa_id`;
 
       if (role !== "admin") {
         // CORREÇÃO: Especificar que o filtro é na coluna da tabela 'd' (desempenhos)
-        conditions.push(`d.empresa_id = $${params.length + 1}`); 
+        conditions.push(`d.empresa_id = $${params.length + 1}`);
         params.push(empresa_id);
       }
-    }
     } else {
       sql = `SELECT * FROM ${current.table}`;
 
