@@ -127,7 +127,7 @@ export async function listResource(req, res) {
         d.id,
         d.aprendiz_id,
         d.empresa_id,
-        e.razao_social as empresa_nome, -- Se quiser mostrar o nome da empresa
+        e.razao_social as empresa_nome,
         d.participacao,
         d.pontualidade,
         d.comprometimento,
@@ -136,9 +136,11 @@ export async function listResource(req, res) {
       LEFT JOIN empresas as e ON e.id = d.empresa_id`;
 
       if (role !== "admin") {
-        conditions.push(`id = $${params.length + 1}`);
+        // CORREÇÃO: Especificar que o filtro é na coluna da tabela 'd' (desempenhos)
+        conditions.push(`d.empresa_id = $${params.length + 1}`); 
         params.push(empresa_id);
       }
+    }
     } else {
       sql = `SELECT * FROM ${current.table}`;
 
