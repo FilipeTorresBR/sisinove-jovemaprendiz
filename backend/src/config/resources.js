@@ -150,17 +150,30 @@ export const resources = {
     canCompanyEdit: false,
     order: "criado_em DESC",
     id: "id",
-    searchable: ["aprendiz_id"],
+    searchable: ["aprendiz_nome"], // Mudamos para buscar pelo nome textual na listagem
+
+    // Mapeamento explícito para a Tabela de Listagem
+    columns: [
+      { name: "id", label: "ID" },
+      { name: "aprendiz_nome", label: "Aprendiz" }, // Mostra o nome retornado pela query
+      { name: "empresa_nome", label: "Empresa" }, // Mostra a razão social retornada pela query
+      { name: "participacao", label: "Participação" },
+      { name: "pontualidade", label: "Pontualidade" },
+      { name: "comprometimento", label: "Comprometimento" },
+      { name: "criado_em", label: "Data" },
+    ],
+
+    // Mapeamento explícito para os Inputs do Formulário
     formFields: [
       {
-        name: "aprendiz_id",
+        name: "aprendiz_id", // Mantém o ID numérico para salvar no banco
         label: "Aprendiz",
         type: "select",
         required: true,
         resource: "aprendizes",
       },
       {
-        name: "empresa_id",
+        name: "empresa_id", // Mantém o ID numérico para salvar no banco
         label: "Empresa",
         type: "select",
         required: true,

@@ -125,8 +125,10 @@ export async function listResource(req, res) {
     } else if (resource === "desempenhos") {
       sql = `SELECT 
         d.id,
-        a.nome as aprendiz_id,
-        e.razao_social as empresa_id,
+        d.aprendiz_id,
+        a.nome as aprendiz_nome,
+        d.empresa_id,
+        e.razao_social as empresa_nome,
         d.participacao,
         d.pontualidade,
         d.comprometimento,
