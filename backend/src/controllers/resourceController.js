@@ -122,7 +122,7 @@ export async function listResource(req, res) {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
       }
-    } else if (resource === "desempenho") {
+    } else if (resource === "desempenhos") {
       sql = `SELECT 
         e.id, 
         e.razao_social, 
