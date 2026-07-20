@@ -122,6 +122,28 @@ export async function listResource(req, res) {
         conditions.push(`id = $${params.length + 1}`);
         params.push(empresa_id);
       }
+    } else if (resource === "desempenho") {
+      sql = `SELECT 
+        e.id, 
+        e.razao_social, 
+        e.cnpj, 
+        e.responsavel_legal, 
+        e.email, 
+        TO_CHAR(e.data_inicio_parceria, 'DD/MM/YYYY') as data_inicio, 
+        TO_CHAR(e.data_fim_parceria, 'DD/MM/YYYY') as data_fim, 
+        e.status, 
+        e.attachments,
+        -- Métricas agregadas de desempenho da empresa:
+        ROUND(AVG(COALESCE(d.participacao, 0)), 2) as media_participacao,
+        ROUND(AVG(COALESCE(d.pontualidade, 0)), 2) as media_pontualidade,
+        COUNT(d.id) as total_avaliacoes
+      FROM empresas as e
+      LEFT JOIN desempenhos as d ON d.empresa_id = e.id`;
+
+      if (role !== "admin") {
+        conditions.push(`id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
     } else {
       sql = `SELECT * FROM ${current.table}`;
 
