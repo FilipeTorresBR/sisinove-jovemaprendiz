@@ -58,7 +58,6 @@ export default function DashboardPage() {
                 <YAxis
                   dataKey="name"
                   type="category"
-                  type="category"
                   axisLine={true}
                   tickLine={true}
                   fill="#666"

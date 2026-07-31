@@ -343,11 +343,7 @@ button {
   width: 100%;
   max-width: 420px;
 }
-@media (max-width: 600px) {
-  .search-input {
-    max-width: 100%;
-  }
-}
+
 .toolbar-badge {
   min-width: 130px;
   text-align: center;
@@ -587,5 +583,10 @@ th {
   .inline-action-card {
     flex-direction: column;
     gap: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .search-input {
+    max-width: 100%;
   }
 }

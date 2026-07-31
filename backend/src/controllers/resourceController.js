@@ -59,7 +59,6 @@ export async function listResource(req, res) {
     let params = [];
     let conditions = [];
 
-    // 1. Define a base da Query trazendo os nomes amigáveis E os nomes originais em minúsculo
     if (resource === "aprendizes") {
       sql = `SELECT 
         a.id, 
@@ -92,8 +91,6 @@ export async function listResource(req, res) {
         f.presencas, 
         f.faltas, 
         f.faltas_justificadas, 
-        f.percentual_frequencia, 
-        f.situacao, 
         f.attachments,
         f.aprendiz_id,
         f.empresa_id
@@ -117,6 +114,26 @@ export async function listResource(req, res) {
         e.status, 
         e.attachments
       FROM empresas as e`;
+
+      if (role !== "admin") {
+        conditions.push(`id = $${params.length + 1}`);
+        params.push(empresa_id);
+      }
+    } else if (resource === "desempenhos") {
+      sql = `SELECT 
+        d.id,
+        a.nome,
+        e.razao_social,
+        d.participacao, 
+        d.pontualidade, 
+        d.comprometimento, 
+        d.observacoes_instrutor, 
+        d.aprendiz_id,
+        d.empresa_id,
+        TO_CHAR(d.criado_em, 'DD/MM/YYYY')
+      FROM desempenhos as d
+      JOIN empresas AS e on e.id = d.empresa_id
+      JOIN aprendizes AS a on a.id = d.aprendiz_id`;
 
       if (role !== "admin") {
         conditions.push(`id = $${params.length + 1}`);

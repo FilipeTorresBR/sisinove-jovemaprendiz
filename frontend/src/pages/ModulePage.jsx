@@ -211,22 +211,24 @@ export default function ModulePage() {
     setForm((current) => {
       const updatedForm = { ...current, [name]: value };
 
-      // Se o usuário selecionou um aprendiz
+      // Se o campo alterado for o aprendiz_id nos módulos de frequencias ou desempenhos
       if (name === "aprendiz_id" && value) {
-        // Busca a lista de aprendizes que está guardada no estado options
         const listaAprendizes = options["aprendiz_id"] || [];
 
-        // Encontra o aprendiz selecionado (compara com .id ou .ID vindo do SQL)
+        // Procura o aprendiz selecionado na lista de opções
         const aprendizSelecionado = listaAprendizes.find(
-          (item) => String(item.id ?? item.ID) === String(value)
+          (item) => String(item.id ?? item.ID ?? item.Id) === String(value)
         );
 
         if (aprendizSelecionado) {
-          // Pega a razão social (verifica os aliases em português ou inglês)
-          const razaoSocial = aprendizSelecionado.Empresa || aprendizSelecionado.razao_social;
+          const empresaIdEncontrada =
+            aprendizSelecionado.empresa_id ??
+            aprendizSelecionado.empresa_ID ??
+            aprendizSelecionado.Empresa_ID ??
+            aprendizSelecionado.Empresa;
 
-          if (razaoSocial) {
-            updatedForm["razao_social"] = razaoSocial;
+          if (empresaIdEncontrada) {
+            updatedForm["empresa_id"] = String(empresaIdEncontrada);
           }
         }
       }
@@ -276,7 +278,17 @@ export default function ModulePage() {
   // 2. Substitua a função handleEdit por esta versão com mapeamento flexível
   function handleEdit(row) {
     const next = emptyForm(meta.formFields);
-
+    if ((resource === "frequencias" || resource === "desempenhos") && next.aprendiz_id) {
+      const listaAprendizes = options["aprendiz_id"] || [];
+      const aprendiz = listaAprendizes.find(
+        (item) => String(item.id ?? item.ID) === String(next.aprendiz_id)
+      );
+      if (aprendiz) {
+        next.empresa_id = String(
+          aprendiz.empresa_id ?? aprendiz.empresa_ID ?? aprendiz.Empresa ?? next.empresa_id
+        );
+      }
+    }
     // Função interna para buscar valores na linha ignorando maiúsculas/minúsculas/acentos
     const findValueInRow = (fieldName) => {
       // Cria uma lista de possíveis nomes que essa coluna pode ter vindo do seu SQL
