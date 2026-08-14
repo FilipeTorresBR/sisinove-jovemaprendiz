@@ -41,8 +41,8 @@ export default function LoginPage() {
       ></img>
       <form className="login-card" onSubmit={handleSubmit}>
         <div>
-          <h1>SISAPRENDIZ</h1>
-          <p>Dashboard Jovem Aprendiz da Sisinove</p>
+          <h1>Jovem Aprendiz</h1>
+          <p>Gestão de Jovens Aprendizes da Sisinove</p>
         </div>
 
         <label>

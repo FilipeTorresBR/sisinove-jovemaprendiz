@@ -12,7 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  # --- jovemaprendiz ---
   jovemaprendiz_backend:
     build: ../sisinove-jovemaprendiz/backend
     restart: always

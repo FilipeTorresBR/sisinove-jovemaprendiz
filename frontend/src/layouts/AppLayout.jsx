@@ -72,7 +72,7 @@ export default function AppLayout() {
             <div className="brand-box" onClick={handleBrandClick} style={{ cursor: 'pointer' }}>
               <div className="brand-mark">S+</div>
               <div>
-                <strong>SISAPRENDIZ</strong>
+                <strong>Jovem Aprendiz</strong>
                 <p>Gestão de Jovens Aprendizes</p>
               </div>
             </div>

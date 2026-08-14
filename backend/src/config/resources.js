@@ -109,12 +109,12 @@ export const resources = {
         },
       },
       {
-        name: "empresa_id", // Mudou aqui
+        name: "empresa_id",
         label: "Empresa",
-        type: "select", // Mudou para select
+        type: "select",
         required: true,
-        resource: "empresas", // Aponta para a tabela de empresas
-        disabled: true, // Mantém desativado para o usuário não mudar manualmente
+        resource: "empresas",
+        disabled: true,
       },
       {
         name: "mes_referencia",
@@ -148,7 +148,7 @@ export const resources = {
     table: "desempenhos",
     roles: ["admin", "empresas"],
     canCompanyEdit: false,
-    order: "criado_em DESC",
+    order: "d.criado_em DESC",
     id: "id",
     searchable: ["aprendiz_id"],
     formFields: [

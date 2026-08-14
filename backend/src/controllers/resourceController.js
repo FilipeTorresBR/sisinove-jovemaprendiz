@@ -129,8 +129,7 @@ export async function listResource(req, res) {
         d.comprometimento, 
         d.observacoes_instrutor, 
         d.aprendiz_id,
-        d.empresa_id,
-        TO_CHAR(d.criado_em, 'DD/MM/YYYY')
+        d.empresa_id
       FROM desempenhos as d
       JOIN empresas AS e on e.id = d.empresa_id
       JOIN aprendizes AS a on a.id = d.aprendiz_id`;
