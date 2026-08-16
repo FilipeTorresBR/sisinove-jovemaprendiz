@@ -227,6 +227,8 @@ export default function ModulePage() {
         <div>
           <h1>{modules[resource]?.label || resource}</h1>
           <p>
+            Módulo operacional da Sisinove com cadastro, edição, gráficos e
+            relatório gerencial.
           </p>
         </div>
       </header>

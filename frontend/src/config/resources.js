@@ -3,5 +3,4 @@ export const modules = {
   aprendizes: { label: "Aprendizes" },
   frequencias: { label: "Frequência mensal" },
   desempenhos: { label: "Desempenho teórico" },
-  curriculos: { label: "Banco de talentos" },
 };
