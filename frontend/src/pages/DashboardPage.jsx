@@ -38,15 +38,13 @@ export default function DashboardPage() {
 
       <section className="charts-grid" style={{ gridTemplateColumns: "1fr" }}>
         <ChartBox title="Aprendizes por empresa">
-          {/* Adicionamos uma classe de controle para o CSS gerenciar a altura */}
-          <div className="chart-area responsive-chart-container">
-            {/* O ResponsiveContainer precisa de uma altura fixa ou percentual definida no pai */}
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="chart-area" style={{ padding: "10px" }}>
+            <ResponsiveContainer width="100%" height={300}>
+              {/* O layout="vertical" permite barras horizontais */}
               <BarChart
                 data={data.charts.aprendizesPorEmpresa}
                 layout="vertical"
-                // Reduzimos as margens para aproveitar cada pixel no celular
-                margin={{ left: 10, right: 30, top: 10, bottom: 10 }}
+                margin={{ left: 30, right: 30 }}
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
@@ -54,20 +52,17 @@ export default function DashboardPage() {
                   stroke="#eee"
                 />
 
-                {/* AJUSTE ESSENCIAL: Removemos o width={620} fixo */}
+                {/* Invertemos: o nome da empresa vai para o eixo Y */}
                 <YAxis
                   dataKey="name"
                   type="category"
-                  axisLine={true}
-                  tickLine={true}
-                  fill="#666"
-                  // Essa função nativa do Recharts encurta nomes gigantes automáticos se passarem do limite
-                  tickFormatter={(value) => value.length > 20 ? `${value.substring(0, 18)}...` : value}
-                  // Largura dinâmica controlada pelo CSS ou injetada de forma segura para telas pequenas
-                  width={window.innerWidth < 768 ? 90 : 180}
-                  tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                  width={120}
+                  tick={{ fontSize: 13, fill: "#666" }}
+                  axisLine={false}
+                  tickLine={false}
                 />
 
+                {/* O valor numérico vai para o eixo X */}
                 <XAxis type="number" hide />
 
                 <Tooltip
@@ -83,12 +78,13 @@ export default function DashboardPage() {
                   dataKey="value"
                   fill="#0b5ed7"
                   radius={[0, 4, 4, 0]}
-                  barSize={window.innerWidth < 768 ? 10 : 14}
+                  barSize={12} // Define a espessura da barra para ficar elegante como na imagem
                 >
+                  {/* Adiciona o número no final de cada barra */}
                   <LabelList
                     dataKey="value"
                     position="right"
-                    style={{ fontSize: 12, fontWeight: "bold", fill: "#333" }}
+                    style={{ fontSize: 14, fontWeight: "bold", fill: "#333" }}
                   />
                 </Bar>
               </BarChart>
@@ -101,30 +97,28 @@ export default function DashboardPage() {
         <div className="panel-header">
           <h3>Últimos registros de frequência</h3>
         </div>
-        <div className="table-wrapper panel">
-          <table>
-            <thead>
-              <tr>
-                <th>Aprendiz</th>
-                <th>Empresa</th>
-                <th>Mês</th>
-                <th>Presenças</th>
-                <th>Faltas</th>
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th>Aprendiz</th>
+              <th>Empresa</th>
+              <th>Mês</th>
+              <th>Presenças</th>
+              <th>Faltas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.recentActivity.map((f, i) => (
+              <tr key={i}>
+                <td>{f.aprendiz}</td>
+                <td>{f.empresa}</td>
+                <td>{f.mes}</td>
+                <td>{f.presencas}</td>
+                <td>{f.faltas}</td>
               </tr>
-            </thead>
-            <tbody>
-              {data.recentActivity.map((f, i) => (
-                <tr key={i}>
-                  <td>{f.aprendiz}</td>
-                  <td>{f.empresa}</td>
-                  <td>{f.mes}</td>
-                  <td>{f.presencas}</td>
-                  <td>{f.faltas}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </section>
     </div>
   );

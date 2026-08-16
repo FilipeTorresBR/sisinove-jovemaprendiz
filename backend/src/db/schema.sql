@@ -23,8 +23,6 @@ CREATE TABLE IF NOT EXISTS aprendizes (
     cbo TEXT,
     dia_aula_teorica TEXT,
     horario_aula_teorica TEXT,
-    data_inicio_contrato DATE,
-    data_fim_contrato DATE,
     status TEXT DEFAULT 'ativo',
     attachments TEXT,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -43,7 +41,7 @@ CREATE TABLE IF NOT EXISTS frequencias (
     anexo_justificativa TEXT,
     situacao TEXT DEFAULT 'regular',
     attachments TEXT,
-    percentual_frequencia DECIMAL(5, 2) DEFAULT 0,
+    percentual_frequencia DECIMAL(5,2) DEFAULT 0,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_aprendiz FOREIGN KEY (aprendiz_id) REFERENCES aprendizes (id) ON DELETE CASCADE,
     CONSTRAINT fk_empresa_freq FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
@@ -57,26 +55,10 @@ CREATE TABLE IF NOT EXISTS desempenhos (
     pontualidade INTEGER DEFAULT 0,
     comprometimento TEXT DEFAULT 'satisfatorio',
     observacoes_instrutor TEXT,
+    
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_aprendiz_desp FOREIGN KEY (aprendiz_id) REFERENCES aprendizes (id) ON DELETE CASCADE,
     CONSTRAINT fk_empresa_desp FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS curriculos (
-    id SERIAL PRIMARY KEY,
-    nome TEXT NOT NULL,
-    idade NUMERIC,
-    cpf TEXT UNIQUE,
-    endereco TEXT,
-    interesse TEXT,
-    cidade TEXT,
-    estado TEXT,
-    email TEXT,
-    telefone TEXT,
-    ctps_assinada TEXT,
-    escolaridade TEXT,
-    attachments TEXT,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -85,19 +67,5 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(150) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     role VARCHAR(60) NOT NULL DEFAULT 'admin',
-    empresa_id INTEGER,
-    criado_em TIMESTAMP DEFAULT NOW(),
-    CONSTRAINT fk_empresa_desp FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS financeiro (
-    id SERIAL PRIMARY KEY,
-    empresa_id INTEGER NOT NULL,
-    descricao TEXT NOT NULL,
-    data_vencimento DATE NOT NULL,
-    boleto_attachments VARCHAR(255),       -- Armazena o link/caminho do arquivo do boleto
-    nota_fiscal_attachments VARCHAR(255),  -- Armazena o link/caminho da NF
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT NOW()
 );

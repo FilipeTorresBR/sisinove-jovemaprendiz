@@ -8,7 +8,7 @@ export async function seedDatabase() {
   const passwordHash = await bcrypt.hash('123456', 10);
   await query(
     'INSERT INTO users (name, email, password_hash, role) VALUES ($1,$2,$3,$4)',
-    ['Lorena Corrêa', 'admin@sisinove.com.br', passwordHash, 'admin']
+    ['Lorena Corrêa', 'admin@sisinove.com.br', passwordHash, 'ceo']
   );
 
 
@@ -52,4 +52,5 @@ export async function seedDatabase() {
     VALUES ($1, $2, $3, $4, $5, $6)
   `, [aprendizId, empresaId, '2024-05', 9, 10, 'excelente']);
 
+  console.log("✨ Seed finalizado com sucesso!");
 }

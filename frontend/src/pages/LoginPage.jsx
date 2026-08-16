@@ -4,8 +4,8 @@ import api from "../services/api";
 
 export default function LoginPage() {
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: "admin@sisinove.com.br",
+    password: "123456",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,20 +14,10 @@ export default function LoginPage() {
     event.preventDefault();
     setError("");
     try {
-      localStorage.clear();
       const { data } = await api.post("/auth/login", form);
-      
       localStorage.setItem("sisq_token", data.token);
       localStorage.setItem("sisq_user", JSON.stringify(data.user));
-      
-      // DETERMINA O DESTINO
-      const destination = data.user.role.toLowerCase() === 'admin' 
-        ? "/" 
-        : "/empresa-profile";
-
-      // EM VEZ DE navigate(destination), usamos:
-      window.location.href = destination;
-
+      navigate("/");
     } catch (e) {
       setError(e.response?.data?.message || "Falha ao entrar.");
     }
@@ -41,8 +31,8 @@ export default function LoginPage() {
       ></img>
       <form className="login-card" onSubmit={handleSubmit}>
         <div>
-          <h1>Jovem Aprendiz</h1>
-          <p>Gestão de Jovens Aprendizes da Sisinove</p>
+          <h1>SISAPRENDIZ</h1>
+          <p>Dashboard Jovem Aprendiz da Sisinove</p>
         </div>
 
         <label>
@@ -65,6 +55,7 @@ export default function LoginPage() {
         {error && <div className="error-box">{error}</div>}
 
         <button type="submit">Entrar</button>
+        <small>Usuário inicial: admin@sisinove.com.br | Senha: 123456</small>
       </form>
     </div>
   );

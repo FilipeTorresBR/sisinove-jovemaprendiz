@@ -4,8 +4,8 @@ COPY package*.json ./
 RUN npm config set registry https://registry.npmjs.org/
 RUN npm install
 COPY . .
-ARG VITE_ISO_API_URL=/api
-ENV VITE_ISO_API_URL=$VITE_ISO_API_URL
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginx:stable-alpine

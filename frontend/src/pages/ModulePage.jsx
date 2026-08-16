@@ -24,8 +24,6 @@ const colors = [
   "#e74c3c",
   "#16a085",
 ];
-const user = JSON.parse(localStorage.getItem("sisq_user") || "{}");
-const isAdmin = user.role?.toLowerCase() === "admin";
 
 function emptyForm(fields) {
   return Object.fromEntries(fields.map((field) => [field.name, ""]));
@@ -43,6 +41,8 @@ function Field({ field, value, onChange, options }) {
   }
 
   if (field.type === "select") {
+    // Aqui está a mágica: ele tenta pegar do estado dinâmico 'options'
+    // Se não houver nada lá, ele usa as 'options' fixas do resources.js
     const lista = options?.[field.name] || field.options || [];
 
     return (
@@ -51,39 +51,16 @@ function Field({ field, value, onChange, options }) {
         onChange={(e) => onChange(field.name, e.target.value)}
       >
         <option value="">Selecione...</option>
-        {lista.map((item) => {
-          if (item === null || item === undefined) return null;
-
-          // Caso 1: O item é uma string simples (Ex: campo [status]: 'ativo')
-          if (typeof item !== "object") {
-            return (
-              <option key={String(item)} value={item}>
-                {item}
-              </option>
-            );
-          }
-
-          // Caso 2: O item é um objeto vindo do banco (Ex: campo [empresa_id])
-          const idValue = item.ID ?? item.id ?? item.Id;
-
-          // Mapeamento exato respeitando espaços, acentos e maiúsculas
-          const textoExibido =
-            item["Razão Social"] ||
-            item.Aluno ||
-            item.nome ||
-            item.Empresa ||
-            item.razao_social;
-
-          return (
-            <option key={String(idValue)} value={idValue}>
-              {textoExibido || `ID: ${idValue}`}
-            </option>
-          );
-        })}
+        {lista.map((item) => (
+          <option key={item.id || item} value={item.id || item}>
+            {/* Tenta mostrar razao_social (empresa), nome (aprendiz) ou o próprio item */}
+            {item.razao_social || item.nome || item}
+          </option>
+        ))}
       </select>
     );
   }
-
+  // NOVO: Tratamento para o campo de arquivo
   if (field.type === "file") {
     return (
       <input
@@ -95,8 +72,13 @@ function Field({ field, value, onChange, options }) {
 
   return (
     <input
-      type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-      disabled={field.disabled}
+      type={
+        field.type === "number"
+          ? "number"
+          : field.type === "date"
+            ? "date"
+            : "text"
+      }
       value={field.type !== "file" ? (value ?? "") : undefined}
       onChange={(e) => onChange(field.name, e.target.value)}
     />
@@ -115,7 +97,6 @@ export default function ModulePage() {
   const [message, setMessage] = useState("");
   const [options, setOptions] = useState({});
 
-  // 1. Atualize a função loadAll para guardar a string pura do link
   async function loadAll() {
     const [metaRes, listRes, reportRes] = await Promise.all([
       api.get(`/resources/meta/${resource}`),
@@ -126,60 +107,27 @@ export default function ModulePage() {
 
     for (const field of fieldsComLink) {
       const res = await api.get(`/resources/${field.resource}`);
+      // Salva no estado usando o nome do campo como chave (ex: options.empresa_id)
       setOptions((prev) => ({ ...prev, [field.name]: res.data }));
     }
     const baseUrl = api.defaults.baseURL.replace("/api", "");
 
     const processedRows = listRes.data.map((row) => {
+      // Criamos uma cópia da linha
       const newRow = { ...row };
 
-      // 1. Tratamento para anexos padrão (Ex: aprendizes, frequencias, empresas)
-      const attachmentKey = Object.keys(newRow).find(k => k.toLowerCase() === 'attachments' || k === 'Anexos');
+      // Se houver anexo, transformamos o texto em um link simples
+      if (newRow.attachments) {
+        const fileUrl = `${baseUrl}${newRow.attachments}`;
 
-      if (attachmentKey && newRow[attachmentKey] && typeof newRow[attachmentKey] === "string") {
-        //newRow[`_raw_${attachmentKey}`] = newRow[attachmentKey];
-        const fileUrl = `${baseUrl}${newRow[attachmentKey]}`;
-
-        newRow[attachmentKey] = (
+        // Se a sua tabela não aceita JSX (o erro [object Object]),
+        // vamos apenas formatar a string para ficar curta.
+        newRow.attachments = (
           <a
             href={fileUrl}
             target="_blank"
             rel="noreferrer"
-            className="btn-link"
-            style={{ color: "#0b5ed7", fontWeight: "bold" }}
-          >
-            Visualizar
-          </a>
-        );
-      }
-
-      // 2. Tratamento para o Boleto (Módulo Financeiro)
-      if (newRow.boleto_attachments && typeof newRow.boleto_attachments === "string") {
-        const boletoUrl = `${baseUrl}${newRow.boleto_attachments}`;
-
-        newRow.boleto_attachments = (
-          <a
-            href={boletoUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-link"
-            style={{ color: "#0b5ed7", fontWeight: "bold" }}
-          >
-            Visualizar
-          </a>
-        );
-      }
-
-      // 3. Tratamento para a Nota Fiscal (Módulo Financeiro)
-      if (newRow.nota_fiscal_attachments && typeof newRow.nota_fiscal_attachments === "string") {
-        const nfUrl = `${baseUrl}${newRow.nota_fiscal_attachments}`;
-
-        newRow.nota_fiscal_attachments = (
-          <a
-            href={nfUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-link"
+            className="btn-link" // Adicione uma classe se tiver no seu CSS
             style={{ color: "#0b5ed7", fontWeight: "bold" }}
           >
             Visualizar
@@ -191,7 +139,7 @@ export default function ModulePage() {
     });
 
     setMeta(metaRes.data);
-    setRows(processedRows);
+    setRows(processedRows); // Agora passamos os dados já "mastigados"
     setReport(reportRes.data);
     setForm(emptyForm(metaRes.data.formFields));
   }
@@ -207,35 +155,8 @@ export default function ModulePage() {
     );
   }, [rows, search]);
 
-  const handleChange = (name, value) => {
-    setForm((current) => {
-      const updatedForm = { ...current, [name]: value };
-
-      // Se o campo alterado for o aprendiz_id nos módulos de frequencias ou desempenhos
-      if (name === "aprendiz_id" && value) {
-        const listaAprendizes = options["aprendiz_id"] || [];
-
-        // Procura o aprendiz selecionado na lista de opções
-        const aprendizSelecionado = listaAprendizes.find(
-          (item) => String(item.id ?? item.ID ?? item.Id) === String(value)
-        );
-
-        if (aprendizSelecionado) {
-          const empresaIdEncontrada =
-            aprendizSelecionado.empresa_id ??
-            aprendizSelecionado.empresa_ID ??
-            aprendizSelecionado.Empresa_ID ??
-            aprendizSelecionado.Empresa;
-
-          if (empresaIdEncontrada) {
-            updatedForm["empresa_id"] = String(empresaIdEncontrada);
-          }
-        }
-      }
-
-      return updatedForm;
-    });
-  };
+  const handleChange = (name, value) =>
+    setForm((current) => ({ ...current, [name]: value }));
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -275,73 +196,13 @@ export default function ModulePage() {
     }
   }
 
-  // 2. Substitua a função handleEdit por esta versão com mapeamento flexível
   function handleEdit(row) {
     const next = emptyForm(meta.formFields);
-    if ((resource === "frequencias" || resource === "desempenhos") && next.aprendiz_id) {
-      const listaAprendizes = options["aprendiz_id"] || [];
-      const aprendiz = listaAprendizes.find(
-        (item) => String(item.id ?? item.ID) === String(next.aprendiz_id)
-      );
-      if (aprendiz) {
-        next.empresa_id = String(
-          aprendiz.empresa_id ?? aprendiz.empresa_ID ?? aprendiz.Empresa ?? next.empresa_id
-        );
-      }
+    for (const key of Object.keys(next)) {
+      next[key] = row[key] ?? "";
     }
-    // Função interna para buscar valores na linha ignorando maiúsculas/minúsculas/acentos
-    const findValueInRow = (fieldName) => {
-      // Cria uma lista de possíveis nomes que essa coluna pode ter vindo do seu SQL
-      const possíveisChaves = [
-        fieldName,                                             // Ex: empresa_id, data_inicio_contrato
-        `_raw_${fieldName}`,                                   // Versão limpa de arquivos
-        fieldName.toLowerCase(),                               // tudo minúsculo
-        fieldName.toUpperCase(),                               // tudo maiúsculo
-      ];
-
-      // Mapeamentos específicos baseados nas aliases que você usou nas queries do backend
-      if (fieldName === 'nome') possíveisChaves.push('Aluno', 'aluno');
-      if (fieldName === 'razao_social') possíveisChaves.push('razao_social', 'Razão Social');
-      if (fieldName === 'cpf') possíveisChaves.push('CPF');
-      if (fieldName === 'ocupacao') possíveisChaves.push('Ocupação', 'ocupacao');
-      if (fieldName === 'cbo') possíveisChaves.push('CBO');
-      if (fieldName === 'dia_aula_teorica') possíveisChaves.push('Dia de Aula');
-      if (fieldName === 'horario_aula_teorica') possíveisChaves.push('Horário');
-      if (fieldName === 'data_inicio_contrato') possíveisChaves.push('Inicio do Contrato', 'Início do contrato');
-      if (fieldName === 'data_fim_contrato') possíveisChaves.push('Fim do Contrato', 'Fim do contrato');
-      if (fieldName === 'status') possíveisChaves.push('Situação', 'situacao');
-      if (fieldName === 'attachments') possíveisChaves.push('Anexos');
-      if (fieldName === 'cnpj') possíveisChaves.push('CNPJ');
-      if (fieldName === 'responsavel_legal') possíveisChaves.push('Responsável Legal');
-      if (fieldName === 'email') possíveisChaves.push('E-Mail', 'email');
-      if (fieldName === 'data_inicio_parceria') possíveisChaves.push('Início da parceria');
-      if (fieldName === 'data_fim_parceria') possíveisChaves.push('Fim da parceria');
-      if (fieldName === 'mes_referencia') possíveisChaves.push('Mês de referência');
-      if (fieldName === 'aulas_previstas') possíveisChaves.push('Aulas Previstas');
-      if (fieldName === 'presencas') possíveisChaves.push('Presenças');
-      if (fieldName === 'faltas') possíveisChaves.push('Faltas');
-      if (fieldName === 'faltas_justificadas') possíveisChaves.push('Faltas Justificadas');
-
-      // Percorre as possibilidades e retorna a primeira que encontrar valor na row
-      for (const chave of possíveisChaves) {
-        if (row[chave] !== undefined && row[chave] !== null) {
-          return row[chave];
-        }
-      }
-      return "";
-    };
-
-    // Preenche o formulário comparando o field.name com os dados dinâmicos da linha
-    for (const field of meta.formFields) {
-      next[field.name] = findValueInRow(field.name);
-    }
-
     setForm(next);
-
-    // Descobre o ID correto (seja id minúsculo ou ID maiúsculo vindo do SQL)
-    const recordId = row.id ?? row.ID ?? row["ID"];
-    setEditingId(recordId);
-
+    setEditingId(row.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -359,7 +220,6 @@ export default function ModulePage() {
 
   if (!meta || !report)
     return <div className="loading">Carregando módulo...</div>;
-  const canEdit = isAdmin || meta.canCompanyEdit;
 
   return (
     <div>
@@ -367,48 +227,88 @@ export default function ModulePage() {
         <div>
           <h1>{modules[resource]?.label || resource}</h1>
           <p>
+            Módulo operacional da Sisinove com cadastro, edição, gráficos e
+            relatório gerencial.
           </p>
         </div>
       </header>
-      <section className="module-top-grid" >
-        {canEdit && (
-          <div className="panel">
-            <div className="panel-header">
-              <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>
-              {editingId && (
-                <button className="ghost-btn" onClick={resetForm}>
-                  Cancelar edição
-                </button>
-              )}
-            </div>
-            <form className="form-grid" onSubmit={handleSubmit}>
-              {meta.formFields.map((field) => (
-                <label
-                  key={field.name}
-                  className={field.type === "textarea" ? "full-span" : ""}
-                >
-                  <span>{field.label}</span>
-                  <Field
-                    field={field}
-                    value={form[field.name]}
-                    onChange={handleChange}
-                    options={options}
-                  />
-                </label>
-              ))}
-              {message && <div className="info-box full-span">{message}</div>}
-              <div className="form-actions full-span">
-                <button type="submit" disabled={saving}>
-                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Salvar"}
-                </button>
-                <button type="button" className="ghost-btn" onClick={resetForm}>
-                  Limpar
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
 
+      <section className="module-top-grid">
+        <div className="panel">
+          <div className="panel-header">
+            <h3>{editingId ? "Editar registro" : "Novo registro"}</h3>
+            {editingId && (
+              <button className="ghost-btn" onClick={resetForm}>
+                Cancelar edição
+              </button>
+            )}
+          </div>
+          <form className="form-grid" onSubmit={handleSubmit}>
+            {meta.formFields.map((field) => (
+              <label
+                key={field.name}
+                className={field.type === "textarea" ? "full-span" : ""}
+              >
+                <span>{field.label}</span>
+                <Field
+                  field={field}
+                  value={form[field.name]}
+                  onChange={handleChange}
+                  options={options} // <--- ADICIONE ESTA LINHA EXATAMENTE ASSIM
+                />
+              </label>
+            ))}
+            {message && <div className="info-box full-span">{message}</div>}
+            <div className="form-actions full-span">
+              <button type="submit" disabled={saving}>
+                {saving ? "Salvando..." : editingId ? "Atualizar" : "Salvar"}
+              </button>
+              <button type="button" className="ghost-btn" onClick={resetForm}>
+                Limpar
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="panel">
+          <div className="panel-header">
+            <h3>{report.chart.title}</h3>
+          </div>
+          <div className="chart-area">
+            <ResponsiveContainer width="100%" height={280}>
+              {report.chart.type === "pie" ? (
+                <PieChart>
+                  <Pie
+                    data={report.chart.data}
+                    dataKey="total"
+                    nameKey="label"
+                    outerRadius={90}
+                  >
+                    {report.chart.data.map((entry, index) => (
+                      <Cell
+                        key={entry.label}
+                        fill={colors[index % colors.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              ) : (
+                <BarChart data={report.chart.data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="total" fill="#0b5ed7" />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+          <div className="report-summary">
+            <strong>{report.total}</strong>
+            <span>registro(s) no módulo</span>
+          </div>
+        </div>
       </section>
 
       <div className="toolbar panel">
@@ -423,11 +323,9 @@ export default function ModulePage() {
 
       <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
         <div className="table-actions">
-          {resource === "frequencias" && (
-            <a className="ghost-btn" href="/relatorios-frequencia">
-              Gerar Relatório de Frequência
-            </a>
-          )}
+          <button className="ghost-btn" onClick={loadAll}>
+            Atualizar dados
+          </button>
         </div>
         <DataTable rows={filtered} />
       </div>
@@ -441,7 +339,7 @@ export default function ModulePage() {
                   row.name ||
                   row.code ||
                   row.protocol ||
-                  `Registro #${row.id || row.ID}`}
+                  `Registro #${row.id}`}
               </strong>
               <p>{Object.values(row).slice(1, 4).join(" • ")}</p>
             </div>

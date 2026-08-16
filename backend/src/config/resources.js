@@ -4,8 +4,6 @@ export const resources = {
     table: "empresas",
     order: "razao_social ASC",
     id: "id",
-    roles: ["admin"],
-    canCompanyEdit: false,
     searchable: [
       "razao_social",
       "nome_fantasia",
@@ -23,12 +21,8 @@ export const resources = {
       { name: "cnpj", label: "CNPJ", type: "text", required: true },
       { name: "email", label: "E-mail", type: "email" },
       { name: "responsavel_legal", label: "Responsável Legal", type: "text" },
-      {
-        name: "data_inicio_parceria",
-        label: "Início da Parceria",
-        type: "date",
-      },
-      { name: "data_fim_parceria", label: "Fim da Parceria", type: "date" },
+      { name: "data_inicio_parceria", label: "Início Parceria", type: "date" },
+      { name: "data_fim_parceria", label: "Fim Parceria", type: "date" },
       {
         name: "status",
         label: "Status",
@@ -45,8 +39,6 @@ export const resources = {
     label: "Cadastro de Aprendizes",
     table: "aprendizes",
     order: "nome ASC",
-    roles: ["admin", "empresas"],
-    canCompanyEdit: false,
     id: "id",
     searchable: ["nome", "cpf", "email", "ocupacao", "status"],
     formFields: [
@@ -59,26 +51,9 @@ export const resources = {
       },
       { name: "nome", label: "Nome Completo", type: "text", required: true },
       { name: "cpf", label: "CPF", type: "text", required: true },
-      {
-        name: "data_inicio_contrato",
-        label: "Início do Contrato",
-        type: "date",
-      },
-      { name: "data_fim_contrato", label: "Fim do Contrato", type: "date" },
-      {
-        name: "status",
-        label: "Situação",
-        type: "select",
-        options: ["ativo", "inativo"],
-      },
       { name: "ocupacao", label: "Ocupação", type: "text" },
       { name: "cbo", label: "CBO", type: "text" },
-      {
-        name: "dia_aula_teorica",
-        label: "Dia Aula Teórica",
-        type: "select",
-        options: ["segunda", "terça", "quarta", "quinta", "sexta", "sabado"],
-      },
+      { name: "dia_aula_teorica", label: "Dia Aula Teórica", type: "text" },
       { name: "horario_aula_teorica", label: "Horário Aula", type: "text" },
       { name: "attachments", label: "Contrato PDF", type: "file" },
     ],
@@ -88,8 +63,6 @@ export const resources = {
   frequencias: {
     label: "Frequência Mensal",
     table: "frequencias",
-    roles: ["admin", "empresas"],
-    canCompanyEdit: false,
     order: "mes_referencia DESC",
     id: "id",
     formFields: [
@@ -99,14 +72,6 @@ export const resources = {
         type: "select",
         required: true,
         resource: "aprendizes",
-        onchange: (selectedOption, formHelpers) => {
-          if (selectedOption && selectedOption.razao_social) {
-            formHelpers.setValue("razao_social", selectedOption.razao_social);
-            formHelpers.setValue("empresa_id", selectedOption.empresa_id);
-          } else {
-            console.log("");
-          }
-        },
       },
       {
         name: "empresa_id",
@@ -114,7 +79,6 @@ export const resources = {
         type: "select",
         required: true,
         resource: "empresas",
-        disabled: true,
       },
       {
         name: "mes_referencia",
@@ -146,9 +110,7 @@ export const resources = {
   desempenhos: {
     label: "Avaliação de Desempenho",
     table: "desempenhos",
-    roles: ["admin", "empresas"],
-    canCompanyEdit: false,
-    order: "d.criado_em DESC",
+    order: "criado_em DESC",
     id: "id",
     searchable: ["aprendiz_id"],
     formFields: [
@@ -187,84 +149,22 @@ export const resources = {
     },
   },
 
-  curriculos: {
-    label: "Banco de talentos",
-    table: "curriculos",
-    roles: ["admin", "empresas"],
-    canCompanyEdit: true,
-    order: "criado_em DESC",
+  auditoria: {
+    label: "Auditoria de Alterações",
+    table: "auditoria_alteracoes",
+    order: "data_hora DESC",
     id: "id",
-    searchable: ["nome", "cpf"],
+    searchable: ["usuario", "tabela", "acao"],
     formFields: [
-      { name: "nome", label: "Nome Completo", type: "text" },
-      { name: "cpf", label: "CPF", type: "text" },
-      { name: "idade", label: "Idade", type: "number" },
-      { name: "interesse", label: "Área de interesse", type: "text" },
-      { name: "endereco", label: "Endereço", type: "text" },
-      {
-        name: "cidade",
-        label: "Cidade",
-        type: "select",
-        options: ["Tucuruí", "Outra"],
-      },
-      {
-        name: "estado",
-        label: "Estado",
-        type: "select",
-        options: ["Pará", "Outro"],
-      },
-      { name: "email", label: "E-mail", type: "email" },
-      { name: "telefone", label: "Telefone", type: "text" },
-      {
-        name: "ctps_assinada",
-        label: "Já trabalhou de carteira assinada?",
-        type: "select",
-        options: ["Sim", "Não"],
-      },
-      {
-        name: "escolaridade",
-        label: "Escolaridade",
-        type: "select",
-        options: [
-          "Fundamental Incompleto",
-          "Fundamental Completo",
-          "Ensino Médio Incompleto",
-          "Ensino Médio Completo",
-          "Ensino Superior Incompleto",
-          "Ensino Superior Completo",
-        ],
-      },
-      { name: "attachments", label: "Anexo do curriculo", type: "file" },
+      { name: "usuario", label: "Usuário", type: "text" },
+      { name: "tabela", label: "Tabela Alterada", type: "text" },
+      { name: "registro_id", label: "ID do Registro", type: "number" },
+      { name: "acao", label: "Ação (INSERT/UPDATE/DELETE)", type: "text" },
+      { name: "dados_anteriores", label: "Dados Anteriores", type: "textarea" },
+      { name: "dados_novos", label: "Dados Novos", type: "textarea" },
+      { name: "data_hora", label: "Data/Hora", type: "text" },
     ],
-    chart: { type: "bar", groupBy: "escolaridade", title: "Escolaridade" },
-  },
-
-  financeiro: {
-    label: "Controle financeiro",
-    table: "financeiro",
-    roles: ["admin", "empresas"],
-    canCompanyEdit: false,
-    order: "criado_em DESC",
-    id: "id",
-    searchable: [],
-    formFields: [
-      {
-        name: "empresa_id",
-        label: "Empresa",
-        type: "select",
-        required: true,
-        resource: "empresas",
-      },
-      { name: "descricao", label: "Descrição", type: "text" },
-      {
-        name: "data_vencimento",
-        label: "Data de Vencimento",
-        type: "date",
-      },
-      { name: "boleto_attachments", label: "Boleto", type: "file" },
-      { name: "nota_fiscal_attachments", label: "Nota Fiscal", type: "file" },
-    ],
-    chart: { type: "bar", groupBy: "empresa_id", title: "Empresas" },
+    chart: { type: "bar", groupBy: "acao", title: "Ações do Sistema" },
   },
 };
 

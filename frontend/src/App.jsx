@@ -1,9 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import CompanyProfile from './pages/CompanyProfile';
 import ModulePage from './pages/ModulePage';
-import FrequencyReports from "./pages/FrequencyReports";
 import AppLayout from './layouts/AppLayout';
 
 function PrivateRoute({ children }) {
@@ -24,8 +22,6 @@ export default function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route path="empresa-profile" element={<CompanyProfile />} />
-        <Route path="relatorios-frequencia" element={<FrequencyReports />} />
         <Route path="modulo/:resource" element={<ModulePage />} />
       </Route>
     </Routes>
